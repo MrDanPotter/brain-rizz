@@ -50,6 +50,14 @@ const MemoryPage: React.FC = () => {
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
 
+  // End session
+  const endSession = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      phase: 'sessionEnd'
+    }));
+  }, []);
+
   // Generate random highlighted tiles
   const generatePattern = useCallback((size: number, count: number): Set<string> => {
     const tiles = new Set<string>();
@@ -64,6 +72,26 @@ const MemoryPage: React.FC = () => {
     
     return tiles;
   }, []);
+
+  // Start inactivity timer
+  const startInactivityTimer = useCallback(() => {
+    if (inactivityTimerRef.current) {
+      window.clearTimeout(inactivityTimerRef.current);
+    }
+    
+    inactivityTimerRef.current = window.setTimeout(() => {
+      setGameState(prev => ({
+        ...prev,
+        consecutiveInactiveRounds: prev.consecutiveInactiveRounds + 1
+      }));
+      
+      if (gameState.consecutiveInactiveRounds >= 1) {
+        endSession();
+      } else {
+        submitRound();
+      }
+    }, config.inactivityTimeout);
+  }, [config.inactivityTimeout, gameState.consecutiveInactiveRounds, endSession]);
 
   // Start a new round
   const startRound = useCallback(() => {
@@ -88,27 +116,7 @@ const MemoryPage: React.FC = () => {
       }));
       startInactivityTimer();
     }, config.stimulusTime);
-  }, [config.gridSize, config.tileCount, config.stimulusTime, generatePattern]);
-
-  // Start inactivity timer
-  const startInactivityTimer = useCallback(() => {
-    if (inactivityTimerRef.current) {
-      window.clearTimeout(inactivityTimerRef.current);
-    }
-    
-    inactivityTimerRef.current = window.setTimeout(() => {
-      setGameState(prev => ({
-        ...prev,
-        consecutiveInactiveRounds: prev.consecutiveInactiveRounds + 1
-      }));
-      
-      if (gameState.consecutiveInactiveRounds >= 1) {
-        endSession();
-      } else {
-        submitRound();
-      }
-    }, config.inactivityTimeout);
-  }, [config.inactivityTimeout, gameState.consecutiveInactiveRounds]);
+  }, [config.gridSize, config.tileCount, config.stimulusTime, generatePattern, startInactivityTimer]);
 
   // Reset inactivity timer on activity
   const resetInactivityTimer = useCallback(() => {
@@ -209,15 +217,7 @@ const MemoryPage: React.FC = () => {
         }
       }, 2000);
     }, 1000);
-  }, [gameState, config.sessionRounds, startRound]);
-
-  // End session
-  const endSession = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      phase: 'sessionEnd'
-    }));
-  }, []);
+  }, [gameState, config.sessionRounds, startRound, endSession]);
 
   // Start new session
   const startSession = useCallback(() => {

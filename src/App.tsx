@@ -18,10 +18,6 @@ const sections: Section[] = [
   { name: 'Problem-Solving', path: '/problem-solving' },
 ];
 
-interface PlaceholderProps {
-  label: string;
-}
-
 function Header(): React.ReactElement {
   const location = useLocation();
   return (
@@ -40,10 +36,6 @@ function Header(): React.ReactElement {
       </nav>
     </header>
   );
-}
-
-function Placeholder({ label }: PlaceholderProps): React.ReactElement {
-  return <div className="br-section-placeholder">{label} Section Coming Soon!</div>;
 }
 
 function App(): React.ReactElement {
