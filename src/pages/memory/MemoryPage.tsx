@@ -25,8 +25,8 @@ interface GameState {
 
 const MemoryPage: React.FC = () => {
   const [config, setConfig] = useState<GameConfig>({
-    gridSize: 3,
-    tileCount: 2,
+    gridSize: 6,
+    tileCount: 5,
     stimulusTime: 1000,
     sessionRounds: 5,
     inactivityTimeout: 15000
@@ -50,14 +50,6 @@ const MemoryPage: React.FC = () => {
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
 
-  // End session
-  const endSession = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      phase: 'sessionEnd'
-    }));
-  }, []);
-
   // Generate random highlighted tiles
   const generatePattern = useCallback((size: number, count: number): Set<string> => {
     const tiles = new Set<string>();
@@ -73,6 +65,14 @@ const MemoryPage: React.FC = () => {
     return tiles;
   }, []);
 
+  // End session
+  const endSession = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      phase: 'sessionEnd'
+    }));
+  }, []);
+
   // Start inactivity timer
   const startInactivityTimer = useCallback(() => {
     if (inactivityTimerRef.current) {
@@ -85,38 +85,17 @@ const MemoryPage: React.FC = () => {
         consecutiveInactiveRounds: prev.consecutiveInactiveRounds + 1
       }));
       
-      if (gameState.consecutiveInactiveRounds >= 1) {
-        endSession();
-      } else {
-        submitRound();
-      }
+      // Check if we should end session or submit round
+      setGameState(prev => {
+        if (prev.consecutiveInactiveRounds >= 1) {
+          return { ...prev, phase: 'sessionEnd' };
+        } else {
+          // Submit round logic will be handled in useEffect
+          return prev;
+        }
+      });
     }, config.inactivityTimeout);
-  }, [config.inactivityTimeout, gameState.consecutiveInactiveRounds, endSession]);
-
-  // Start a new round
-  const startRound = useCallback(() => {
-    const highlightedTiles = generatePattern(config.gridSize, config.tileCount);
-    
-    setGameState(prev => ({
-      ...prev,
-      phase: 'stimulus',
-      highlightedTiles,
-      selectedTiles: new Set(),
-      correctTiles: new Set(),
-      incorrectTiles: new Set(),
-      roundScore: 0,
-      lastActivityTime: Date.now()
-    }));
-
-    // Clear stimulus after configured time
-    stimulusTimerRef.current = window.setTimeout(() => {
-      setGameState(prev => ({
-        ...prev,
-        phase: 'recall'
-      }));
-      startInactivityTimer();
-    }, config.stimulusTime);
-  }, [config.gridSize, config.tileCount, config.stimulusTime, generatePattern, startInactivityTimer]);
+  }, [config.inactivityTimeout]);
 
   // Reset inactivity timer on activity
   const resetInactivityTimer = useCallback(() => {
@@ -213,11 +192,36 @@ const MemoryPage: React.FC = () => {
             phase: 'stimulus',
             currentRound: prev.currentRound + 1
           }));
-          startRound();
+          // Start next round will be handled in useEffect
         }
       }, 2000);
     }, 1000);
-  }, [gameState, config.sessionRounds, startRound, endSession]);
+  }, [gameState, config.sessionRounds, endSession]);
+
+  // Start a new round
+  const startRound = useCallback(() => {
+    const highlightedTiles = generatePattern(config.gridSize, config.tileCount);
+    
+    setGameState(prev => ({
+      ...prev,
+      phase: 'stimulus',
+      highlightedTiles,
+      selectedTiles: new Set(),
+      correctTiles: new Set(),
+      incorrectTiles: new Set(),
+      roundScore: 0,
+      lastActivityTime: Date.now()
+    }));
+
+    // Clear stimulus after configured time
+    stimulusTimerRef.current = window.setTimeout(() => {
+      setGameState(prev => ({
+        ...prev,
+        phase: 'recall'
+      }));
+      startInactivityTimer();
+    }, config.stimulusTime);
+  }, [config.gridSize, config.tileCount, config.stimulusTime, generatePattern, startInactivityTimer]);
 
   // Start new session
   const startSession = useCallback(() => {
@@ -237,6 +241,20 @@ const MemoryPage: React.FC = () => {
     
     startRound();
   }, [startRound]);
+
+  // Handle inactivity timeout
+  useEffect(() => {
+    if (gameState.consecutiveInactiveRounds >= 1 && gameState.phase === 'recall') {
+      submitRound();
+    }
+  }, [gameState.consecutiveInactiveRounds, gameState.phase, submitRound]);
+
+  // Handle round transitions
+  useEffect(() => {
+    if (gameState.phase === 'stimulus' && gameState.currentRound > 1) {
+      startRound();
+    }
+  }, [gameState.phase, gameState.currentRound, startRound]);
 
   // Cleanup timers on unmount
   useEffect(() => {
