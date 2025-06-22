@@ -24,6 +24,7 @@ const AttentionPage: React.FC = () => {
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect'>('none');
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [stats, setStats] = useState<GameStats>({
     totalPoints: 0,
     correctGo: 0,
@@ -38,8 +39,15 @@ const AttentionPage: React.FC = () => {
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
   const blankTimerRef = useRef<number | null>(null);
+  const countdownTimerRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const canRespondRef = useRef<boolean>(false);
+  const gameStateRef = useRef<'menu' | 'playing' | 'summary'>('menu');
+
+  // Update gameStateRef whenever gameState changes
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   const generateStimulus = useCallback((): StroopStimulus => {
     const word = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -97,13 +105,13 @@ const AttentionPage: React.FC = () => {
         
         // Show blank screen for 500ms
         blankTimerRef.current = setTimeout(() => {
-          if (gameState === 'playing') {
+          if (gameStateRef.current === 'playing') {
             showStimulus();
           }
         }, 500);
       }
     }, 2000);
-  }, [generateStimulus, gameState]);
+  }, [generateStimulus]);
 
   const handleResponse = useCallback(() => {
     if (!canRespondRef.current || !currentStimulus) return;
@@ -145,12 +153,12 @@ const AttentionPage: React.FC = () => {
       
       // Show blank screen for 500ms
       blankTimerRef.current = setTimeout(() => {
-        if (gameState === 'playing') {
+        if (gameStateRef.current === 'playing') {
           showStimulus();
         }
       }, 500);
     }, 150);
-  }, [currentStimulus, gameState, showStimulus]);
+  }, [currentStimulus, showStimulus]);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (event.code === 'Space' && gameState === 'playing') {
@@ -163,6 +171,7 @@ const AttentionPage: React.FC = () => {
     setGameState('playing');
     setScore(0);
     setTimeLeft(60);
+    setCountdown(3);
     setStats({
       totalPoints: 0,
       correctGo: 0,
@@ -172,26 +181,43 @@ const AttentionPage: React.FC = () => {
     });
     setLastStimulus('');
     
-    // Start the game timer
-    gameTimerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          endGame();
-          return 0;
+    // Start countdown
+    countdownTimerRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          // Countdown finished, start the game
+          setCountdown(null);
+          if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current);
+          }
+          
+          // Start the game timer
+          gameTimerRef.current = setInterval(() => {
+            setTimeLeft(prev => {
+              if (prev <= 1) {
+                endGame();
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          // Start the first stimulus
+          setTimeout(() => {
+            showStimulus();
+          }, 500);
+          
+          return null;
         }
         return prev - 1;
       });
     }, 1000);
-    
-    // Start the first stimulus
-    setTimeout(() => {
-      showStimulus();
-    }, 500);
   };
 
   const endGame = () => {
     setGameState('summary');
     setCurrentStimulus(null);
+    setCountdown(null);
     canRespondRef.current = false;
     
     // Clear all timers
@@ -199,6 +225,7 @@ const AttentionPage: React.FC = () => {
     if (stimulusTimerRef.current) clearTimeout(stimulusTimerRef.current);
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     if (blankTimerRef.current) clearTimeout(blankTimerRef.current);
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
   };
 
   const playAgain = () => {
@@ -219,6 +246,7 @@ const AttentionPage: React.FC = () => {
       if (stimulusTimerRef.current) clearTimeout(stimulusTimerRef.current);
       if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
       if (blankTimerRef.current) clearTimeout(blankTimerRef.current);
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
     };
   }, []);
 
@@ -346,12 +374,19 @@ const AttentionPage: React.FC = () => {
       </div>
       
       <div className="game-area">
-        {currentStimulus && (
+        {countdown !== null ? (
+          <div className="countdown-container">
+            <div className="countdown-text">Start in</div>
+            <div className="countdown-number">{countdown}</div>
+          </div>
+        ) : (
           <div 
             className="stimulus-container"
-            style={{ color: getColorStyle(currentStimulus.inkColor) }}
+            style={{ 
+              color: currentStimulus ? getColorStyle(currentStimulus.inkColor) : 'transparent'
+            }}
           >
-            {colorBlindMode && (
+            {colorBlindMode && currentStimulus && (
               <div 
                 className="color-shape"
                 style={{
@@ -362,15 +397,11 @@ const AttentionPage: React.FC = () => {
             )}
             <div 
               className="stimulus-word"
-              aria-label={`Text: ${currentStimulus.word}, Color: ${currentStimulus.inkColor}`}
+              aria-label={currentStimulus ? `Text: ${currentStimulus.word}, Color: ${currentStimulus.inkColor}` : 'Waiting for next word'}
             >
-              {currentStimulus.word}
+              {currentStimulus ? currentStimulus.word : ''}
             </div>
           </div>
-        )}
-        
-        {!currentStimulus && (
-          <div className="blank-screen" />
         )}
       </div>
       
@@ -378,7 +409,7 @@ const AttentionPage: React.FC = () => {
         <button 
           className="response-btn"
           onClick={handleResponse}
-          disabled={!canRespondRef.current}
+          disabled={!canRespondRef.current || countdown !== null}
           aria-label="Press when word matches color"
         >
           Press when word matches color
