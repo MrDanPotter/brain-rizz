@@ -264,13 +264,11 @@ const AttentionPage: React.FC = () => {
   if (gameState === 'menu') {
     return (
       <div className="stroop-page">
-        <div className="stroop-header">
-          <h2>Stroop Test</h2>
-          <p>Press SPACE only when the word matches its color</p>
-        </div>
-        
         <div className="stroop-menu">
           <div className="menu-card">
+            <h2>Stroop Test</h2>
+            <p>Press SPACE only when the word matches its color</p>
+            
             <h3>Instructions</h3>
             <ul>
               <li>You'll see color words (RED, BLUE, GREEN, YELLOW)</li>

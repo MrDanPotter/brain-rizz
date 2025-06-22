@@ -68,6 +68,7 @@ body {
   -webkit-text-fill-color: transparent;
   margin: 0;
   text-align: left;
+  flex: 0 0 auto;
 }
 
 .br-nav {
@@ -75,6 +76,8 @@ body {
   gap: 2rem;
   justify-content: center;
   align-items: center;
+  flex: 1;
+  margin-left: 2rem;
 }
 
 .br-nav-btn {

@@ -14,22 +14,6 @@
   position: relative;
 }
 
-.stroop-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.stroop-header h2 {
-  font-size: 3rem;
-  color: white;
-  margin-bottom: 0.5rem;
-}
-
-.stroop-header p {
-  font-size: 1.3rem;
-  color: rgba(255, 255, 255, 0.9);
-}
-
 /* Menu Styles */
 .stroop-menu {
   display: flex;
@@ -38,18 +22,32 @@
 }
 
 .menu-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
   border-radius: 20px;
   padding: 3rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   max-width: 600px;
   width: 100%;
 }
 
+.menu-card h2 {
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.menu-card p {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .menu-card h3 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: white;
   margin-bottom: 1.5rem;
   text-align: center;
@@ -126,27 +124,26 @@
 .stroop-game {
   display: flex;
   flex-direction: column;
-  height: 100vh;
   padding: 1rem;
   transition: all 0.15s ease;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 15px;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
 .score-display, .time-display {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: white;
 }
@@ -165,6 +162,8 @@
   justify-content: center;
   align-items: center;
   position: relative;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .stimulus-container {
@@ -173,29 +172,33 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  min-height: 200px;
-  min-width: 300px;
+  min-height: 150px;
+  min-width: 250px;
+  max-height: 80vh;
+  max-width: 90vw;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  padding: 2rem;
+  padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .stimulus-word {
-  font-size: 4rem;
+  font-size: clamp(2rem, 8vw, 4rem);
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 2px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   z-index: 2;
   position: relative;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .color-shape {
   position: absolute;
-  width: 120px;
-  height: 120px;
+  width: clamp(60px, 15vw, 120px);
+  height: clamp(60px, 15vw, 120px);
   opacity: 0.3;
   z-index: 1;
   top: 50%;
@@ -212,20 +215,21 @@
 .game-controls {
   display: flex;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
+  flex-shrink: 0;
 }
 
 .response-btn {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
   border: none;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 10px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 250px;
+  min-width: 200px;
   box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
 }
 
@@ -252,12 +256,12 @@
 
 /* Summary Styles */
 .summary-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
   border-radius: 20px;
   padding: 3rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
@@ -320,7 +324,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .stroop-page {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   
   .stroop-header h2 {
@@ -335,6 +339,10 @@
     padding: 2rem;
   }
   
+  .menu-card h2 {
+    font-size: 2rem;
+  }
+  
   .menu-card h3 {
     font-size: 1.5rem;
   }
@@ -343,26 +351,25 @@
     font-size: 1rem;
   }
   
-  .stimulus-word {
-    font-size: 2.5rem;
-  }
-  
-  .color-shape {
-    width: 80px;
-    height: 80px;
-  }
-  
   .game-header {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
   }
   
   .score-display, .time-display {
-    font-size: 1.2rem;
+    font-size: 1rem;
+  }
+  
+  .stimulus-container {
+    padding: 1rem;
+    min-height: 120px;
+    min-width: 200px;
   }
   
   .response-btn {
-    min-width: 200px;
-    padding: 0.75rem 1.5rem;
+    min-width: 180px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
   
   .summary-card {
@@ -375,17 +382,66 @@
 }
 
 @media (max-width: 480px) {
-  .stimulus-word {
-    font-size: 2rem;
-  }
-  
-  .color-shape {
-    width: 60px;
-    height: 60px;
+  .stroop-game {
+    padding: 0.5rem;
   }
   
   .game-header {
     flex-direction: column;
     gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .stimulus-container {
+    padding: 0.75rem;
+    min-height: 100px;
+    min-width: 150px;
+  }
+  
+  .response-btn {
+    min-width: 150px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .menu-card {
+    padding: 1.5rem;
+  }
+  
+  .menu-card h2 {
+    font-size: 1.8rem;
+  }
+  
+  .menu-card p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .stroop-game {
+    padding: 0.5rem;
+  }
+  
+  .game-header {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .score-display, .time-display {
+    font-size: 1rem;
+  }
+  
+  .stimulus-container {
+    padding: 1rem;
+    min-height: 100px;
+  }
+  
+  .game-controls {
+    padding: 0.5rem;
+  }
+  
+  .response-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 } 
