@@ -142,11 +142,11 @@
 }
 
 .minus-btn {
-  color: #e74c3c;
+  color: black;
 }
 
 .plus-btn {
-  color: #27ae60;
+  color: black;
 }
 
 .start-btn {
@@ -390,7 +390,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: white;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -398,12 +398,13 @@
 .stat-label {
   font-size: 1.1rem;
   font-weight: 600;
+  color: black;
 }
 
 .stat-value {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #f39c12;
+  color: black;
 }
 
 .session-actions {
