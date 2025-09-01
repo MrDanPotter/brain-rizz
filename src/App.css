@@ -104,6 +104,34 @@ body {
   transform: translateY(-2px) scale(1.05);
 }
 
+.br-install-btn {
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #4A90E2 0%, #357ABD 100%);
+  border: none;
+  border-radius: 2rem;
+  padding: 0.7rem 1.8rem;
+  box-shadow: 0 4px 16px 0 rgba(74, 144, 226, 0.3);
+  transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.br-install-btn:hover {
+  background: linear-gradient(90deg, #357ABD 0%, #2E6AA8 100%);
+  box-shadow: 0 6px 24px 0 rgba(74, 144, 226, 0.4);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.br-install-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
 .br-main {
   display: flex;
   flex-direction: column;
@@ -143,9 +171,16 @@ body {
   
   .br-nav {
     gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   .br-nav-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+  }
+  
+  .br-install-btn {
     padding: 0.5rem 1.2rem;
     font-size: 1rem;
   }

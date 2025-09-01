@@ -62,8 +62,8 @@
   padding: 0.75rem 1rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: white;
+  color: black;
   font-size: 1rem;
   min-width: 200px;
   text-align: center;
@@ -72,13 +72,81 @@
 .config-group select:focus,
 .config-group input:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
 }
 
 .config-group option {
-  background: #2c3e50;
+  background: white;
+  color: black;
+}
+
+/* Tile count container styles */
+.tile-count-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tile-count-info {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+/* Display time container styles */
+.display-time-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.time-display {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  min-width: 80px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
   color: white;
+}
+
+.time-btn {
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.time-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.time-btn:active {
+  transform: translateY(0);
+}
+
+.minus-btn {
+  color: #e74c3c;
+}
+
+.plus-btn {
+  color: #27ae60;
 }
 
 .start-btn {
@@ -434,6 +502,21 @@
     min-width: 150px;
   }
   
+  .display-time-container {
+    gap: 0.5rem;
+  }
+  
+  .time-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+  
+  .time-display {
+    min-width: 70px;
+    padding: 0.5rem 0.75rem;
+  }
+  
   .final-stats {
     gap: 1rem;
   }
@@ -458,5 +541,25 @@
   
   .memory-cell {
     border-radius: 8px;
+  }
+  
+  .display-time-container {
+    gap: 0.4rem;
+  }
+  
+  .time-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .time-display {
+    min-width: 60px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .tile-count-info {
+    font-size: 0.8rem;
   }
 } 

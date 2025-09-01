@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './ProblemSolvingPage.css';
 
 interface SudokuConfig {
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert';
+  difficulty: 'easy' | 'medium' | 'hard';
   autoCheck: boolean;
   showHints: boolean;
 }
@@ -144,8 +144,7 @@ const ProblemSolvingPage: React.FC = () => {
     const cellsToRemove = {
       easy: 30,
       medium: 40,
-      hard: 50,
-      expert: 60
+      hard: 50
     };
     
     const puzzle = solvedBoard.map(row => 
@@ -376,13 +375,12 @@ const ProblemSolvingPage: React.FC = () => {
                 value={config.difficulty}
                 onChange={(e) => setConfig(prev => ({ 
                   ...prev, 
-                  difficulty: e.target.value as 'easy' | 'medium' | 'hard' | 'expert' 
+                  difficulty: e.target.value as 'easy' | 'medium' | 'hard' 
                 }))}
               >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
-                <option value="expert">Expert</option>
               </select>
             </div>
             

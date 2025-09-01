@@ -26,8 +26,8 @@ interface GameState {
 const MemoryPage: React.FC = () => {
   const [config, setConfig] = useState<GameConfig>({
     gridSize: 6,
-    tileCount: 5,
-    stimulusTime: 1000,
+    tileCount: 6, // Minimum for 6x6 grid
+    stimulusTime: 1000, // 1 second in milliseconds
     sessionRounds: 5,
     inactivityTimeout: 15000
   });
@@ -49,6 +49,42 @@ const MemoryPage: React.FC = () => {
   const inactivityTimerRef = useRef<number | null>(null);
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
+
+  // Calculate valid tile count range based on grid size
+  const getTileCountRange = useCallback((gridSize: number) => {
+    const min = gridSize;
+    const max = gridSize * (gridSize - 1);
+    return { min, max };
+  }, []);
+
+  // Update tile count when grid size changes to ensure it's within valid range
+  const handleGridSizeChange = useCallback((newGridSize: number) => {
+    const { min, max } = getTileCountRange(newGridSize);
+    setConfig(prev => ({
+      ...prev,
+      gridSize: newGridSize,
+      tileCount: Math.min(Math.max(prev.tileCount, min), max)
+    }));
+  }, [getTileCountRange]);
+
+  // Handle display time increments/decrements
+  const handleDisplayTimeChange = useCallback((increment: boolean) => {
+    setConfig(prev => {
+      const currentSeconds = prev.stimulusTime / 1000;
+      let newSeconds: number;
+      
+      if (increment) {
+        newSeconds = Math.min(currentSeconds + 0.25, 2.5);
+      } else {
+        newSeconds = Math.max(currentSeconds - 0.25, 0.5);
+      }
+      
+      return {
+        ...prev,
+        stimulusTime: Math.round(newSeconds * 1000)
+      };
+    });
+  }, []);
 
   // Generate random highlighted tiles
   const generatePattern = useCallback((size: number, count: number): Set<string> => {
@@ -265,6 +301,17 @@ const MemoryPage: React.FC = () => {
     };
   }, []);
 
+  // Ensure tile count is within valid range on mount
+  useEffect(() => {
+    const { min, max } = getTileCountRange(config.gridSize);
+    if (config.tileCount < min || config.tileCount > max) {
+      setConfig(prev => ({
+        ...prev,
+        tileCount: Math.min(Math.max(prev.tileCount, min), max)
+      }));
+    }
+  }, [config.gridSize, config.tileCount, getTileCountRange]);
+
   // Add keyboard event listener
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -329,9 +376,9 @@ const MemoryPage: React.FC = () => {
               <select
                 id="gridSize"
                 value={config.gridSize}
-                onChange={(e) => setConfig(prev => ({ ...prev, gridSize: parseInt(e.target.value) }))}
+                onChange={(e) => handleGridSizeChange(parseInt(e.target.value))}
               >
-                {[2, 3, 4, 5, 6, 7].map(size => (
+                {[4, 5, 6, 7].map(size => (
                   <option key={size} value={size}>{size} × {size}</option>
                 ))}
               </select>
@@ -339,27 +386,49 @@ const MemoryPage: React.FC = () => {
             
             <div className="config-group">
               <label htmlFor="tileCount">Number of Tiles:</label>
-              <input
-                id="tileCount"
-                type="number"
-                min="1"
-                max={config.gridSize * config.gridSize}
-                value={config.tileCount}
-                onChange={(e) => setConfig(prev => ({ ...prev, tileCount: parseInt(e.target.value) }))}
-              />
+              <div className="tile-count-container">
+                <input
+                  id="tileCount"
+                  type="number"
+                  min={getTileCountRange(config.gridSize).min}
+                  max={getTileCountRange(config.gridSize).max}
+                  value={config.tileCount}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value)) {
+                      const { min, max } = getTileCountRange(config.gridSize);
+                      const clampedValue = Math.min(Math.max(value, min), max);
+                      setConfig(prev => ({ ...prev, tileCount: clampedValue }));
+                    }
+                  }}
+                />
+                <div className="tile-count-info">
+                  Range: {getTileCountRange(config.gridSize).min} - {getTileCountRange(config.gridSize).max}
+                </div>
+              </div>
             </div>
             
             <div className="config-group">
-              <label htmlFor="stimulusTime">Display Time (ms):</label>
-              <input
-                id="stimulusTime"
-                type="number"
-                min="500"
-                max="2000"
-                step="100"
-                value={config.stimulusTime}
-                onChange={(e) => setConfig(prev => ({ ...prev, stimulusTime: parseInt(e.target.value) }))}
-              />
+              <label htmlFor="stimulusTime">Display Time:</label>
+              <div className="display-time-container">
+                <button
+                  className="time-btn minus-btn"
+                  onClick={() => handleDisplayTimeChange(false)}
+                  aria-label="Decrease display time by 0.25 seconds"
+                >
+                  −
+                </button>
+                <div className="time-display">
+                  {(config.stimulusTime / 1000).toFixed(2)}s
+                </div>
+                <button
+                  className="time-btn plus-btn"
+                  onClick={() => handleDisplayTimeChange(true)}
+                  aria-label="Increase display time by 0.25 seconds"
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
           
