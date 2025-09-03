@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './AttentionPage.css';
+import '../../styles/common.css';
 import StroopTest from './StroopTest';
 import StroopTestShapes from './StroopTestShapes';
 

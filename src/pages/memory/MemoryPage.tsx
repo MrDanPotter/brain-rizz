@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './MemoryPage.css';
+import '../../styles/common.css';
 
 interface GameConfig {
   gridSize: number;
