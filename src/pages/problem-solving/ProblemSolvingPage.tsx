@@ -168,7 +168,7 @@ const ProblemSolvingPage: React.FC = () => {
               </label>
             </div>
             
-            <div className="config-group">
+            {/* <div className="config-group">
               <label>
                 <input
                   type="checkbox"
@@ -177,7 +177,7 @@ const ProblemSolvingPage: React.FC = () => {
                 />
                 Show hints
               </label>
-            </div>
+            </div> */}
           </div>
           
           <button className="start-btn" onClick={startGame}>

@@ -65,20 +65,6 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ isOpen, onClose }) 
         <div className="pwa-modal-body">
           <div className="pwa-install-icon">📱</div>
           <p>Add this app to your home screen for quick access and offline use.</p>
-          <div className="pwa-install-benefits">
-            <div className="benefit-item">
-              <span className="benefit-icon">⚡</span>
-              <span>Faster loading</span>
-            </div>
-            <div className="benefit-item">
-              <span className="benefit-icon">🔄</span>
-              <span>Works offline</span>
-            </div>
-            <div className="benefit-item">
-              <span className="benefit-icon">📱</span>
-              <span>App-like experience</span>
-            </div>
-          </div>
         </div>
         <div className="pwa-modal-footer">
           <button 

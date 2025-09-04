@@ -17,6 +17,8 @@ self.addEventListener('install', (event) => {
         return cache.addAll(urlsToCache);
       })
   );
+  // Skip waiting to activate immediately
+  self.skipWaiting();
 });
 
 // Fetch event - serve from cache when offline
@@ -44,4 +46,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // Take control of all clients immediately
+  return self.clients.claim();
 });
