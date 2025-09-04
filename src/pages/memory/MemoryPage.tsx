@@ -4,7 +4,7 @@ import '../../styles/common.css';
 
 interface GameConfig {
   gridSize: number;
-  tileCount: number;
+  difficulty: 'easy' | 'medium' | 'hard';
   stimulusTime: number;
   sessionRounds: number;
   inactivityTimeout: number;
@@ -27,7 +27,7 @@ interface GameState {
 const MemoryPage: React.FC = () => {
   const [config, setConfig] = useState<GameConfig>({
     gridSize: 6,
-    tileCount: 6, // Minimum for 6x6 grid
+    difficulty: 'easy',
     stimulusTime: 1000, // 1 second in milliseconds
     sessionRounds: 5,
     inactivityTimeout: 15000
@@ -51,6 +51,24 @@ const MemoryPage: React.FC = () => {
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
 
+  // Calculate tile count based on difficulty and grid size
+  const getTileCountForDifficulty = useCallback((gridSize: number, difficulty: 'easy' | 'medium' | 'hard') => {
+    const min = gridSize; // N
+    const max = gridSize * (gridSize - 1); // N*(N-1)
+    const hardMax = gridSize * (gridSize - 2); // N*(N-2)
+    
+    switch (difficulty) {
+      case 'easy':
+        return min;
+      case 'hard':
+        return hardMax;
+      case 'medium':
+        return Math.floor((min + hardMax) / 2);
+      default:
+        return min;
+    }
+  }, []);
+
   // Calculate valid tile count range based on grid size
   const getTileCountRange = useCallback((gridSize: number) => {
     const min = gridSize;
@@ -58,15 +76,13 @@ const MemoryPage: React.FC = () => {
     return { min, max };
   }, []);
 
-  // Update tile count when grid size changes to ensure it's within valid range
+  // Update grid size
   const handleGridSizeChange = useCallback((newGridSize: number) => {
-    const { min, max } = getTileCountRange(newGridSize);
     setConfig(prev => ({
       ...prev,
-      gridSize: newGridSize,
-      tileCount: Math.min(Math.max(prev.tileCount, min), max)
+      gridSize: newGridSize
     }));
-  }, [getTileCountRange]);
+  }, []);
 
   // Handle display time increments/decrements
   const handleDisplayTimeChange = useCallback((increment: boolean) => {
@@ -237,7 +253,8 @@ const MemoryPage: React.FC = () => {
 
   // Start a new round
   const startRound = useCallback(() => {
-    const highlightedTiles = generatePattern(config.gridSize, config.tileCount);
+    const tileCount = getTileCountForDifficulty(config.gridSize, config.difficulty);
+    const highlightedTiles = generatePattern(config.gridSize, tileCount);
     
     setGameState(prev => ({
       ...prev,
@@ -258,7 +275,7 @@ const MemoryPage: React.FC = () => {
       }));
       startInactivityTimer();
     }, config.stimulusTime);
-  }, [config.gridSize, config.tileCount, config.stimulusTime, generatePattern, startInactivityTimer]);
+  }, [config.gridSize, config.difficulty, config.stimulusTime, generatePattern, startInactivityTimer, getTileCountForDifficulty]);
 
   // Start new session
   const startSession = useCallback(() => {
@@ -301,17 +318,6 @@ const MemoryPage: React.FC = () => {
       if (feedbackTimerRef.current) window.clearTimeout(feedbackTimerRef.current);
     };
   }, []);
-
-  // Ensure tile count is within valid range on mount
-  useEffect(() => {
-    const { min, max } = getTileCountRange(config.gridSize);
-    if (config.tileCount < min || config.tileCount > max) {
-      setConfig(prev => ({
-        ...prev,
-        tileCount: Math.min(Math.max(prev.tileCount, min), max)
-      }));
-    }
-  }, [config.gridSize, config.tileCount, getTileCountRange]);
 
   // Add keyboard event listener
   useEffect(() => {
@@ -386,27 +392,19 @@ const MemoryPage: React.FC = () => {
             </div>
             
             <div className="config-group">
-              <label htmlFor="tileCount">Number of Tiles:</label>
-              <div className="tile-count-container">
-                <input
-                  id="tileCount"
-                  type="number"
-                  min={getTileCountRange(config.gridSize).min}
-                  max={getTileCountRange(config.gridSize).max}
-                  value={config.tileCount}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value)) {
-                      const { min, max } = getTileCountRange(config.gridSize);
-                      const clampedValue = Math.min(Math.max(value, min), max);
-                      setConfig(prev => ({ ...prev, tileCount: clampedValue }));
-                    }
-                  }}
-                />
-                <div className="tile-count-info">
-                  Range: {getTileCountRange(config.gridSize).min} - {getTileCountRange(config.gridSize).max}
-                </div>
-              </div>
+              <label htmlFor="difficulty">Difficulty:</label>
+              <select
+                id="difficulty"
+                value={config.difficulty}
+                onChange={(e) => setConfig(prev => ({ 
+                  ...prev, 
+                  difficulty: e.target.value as 'easy' | 'medium' | 'hard' 
+                }))}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
             </div>
             
             <div className="config-group">
@@ -457,8 +455,8 @@ const MemoryPage: React.FC = () => {
               <span className="stat-value">{gameState.currentRound}</span>
             </div>
             <div className="stat">
-              <span className="stat-label">Highest Tile Count:</span>
-              <span className="stat-value">{config.tileCount}</span>
+              <span className="stat-label">Difficulty:</span>
+              <span className="stat-value">{config.difficulty}</span>
             </div>
           </div>
           
@@ -483,7 +481,7 @@ const MemoryPage: React.FC = () => {
         
         {gameState.phase === 'recall' && (
           <button className="submit-btn" onClick={submitRound}>
-            Submit ({gameState.selectedTiles.size}/{config.tileCount})
+            Submit ({gameState.selectedTiles.size}/{getTileCountForDifficulty(config.gridSize, config.difficulty)})
           </button>
         )}
       </div>

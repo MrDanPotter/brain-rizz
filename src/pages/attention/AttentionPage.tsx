@@ -56,7 +56,7 @@ const AttentionPage: React.FC = () => {
               <li>Game duration: 60 seconds</li>
             </ul>
             
-            <div className="accessibility-options">
+            {/* <div className="accessibility-options">
               <label className="checkbox-label">
                 <input
                   type="checkbox"
@@ -65,7 +65,7 @@ const AttentionPage: React.FC = () => {
                 />
                 Color-blind mode (use shapes instead of colors)
               </label>
-            </div>
+            </div> */}
             
             <button className="start-btn" onClick={startGame}>
               Begin
