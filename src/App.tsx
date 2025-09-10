@@ -7,6 +7,7 @@ import MemoryPage from './pages/memory';
 import AttentionPage from './pages/attention';
 import ProblemSolvingPage from './pages/problem-solving';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import { isIOS, isInStandalone } from './utils/pwaUtils';
 
 interface Section {
   name: string;
@@ -21,6 +22,9 @@ const sections: Section[] = [
 
 function Header({ onInstallClick }: { onInstallClick: () => void }): React.ReactElement {
   const location = useLocation();
+  
+  // Only show install button if not already installed
+  const shouldShowInstallButton = !isInStandalone();
 
   return (
     <header className="br-header">
@@ -35,13 +39,15 @@ function Header({ onInstallClick }: { onInstallClick: () => void }): React.React
             {section.name}
           </Link>
         ))}
-        <button 
-          onClick={onInstallClick}
-          className="br-install-btn"
-          title="Install Brain Rizz App"
-        >
-          📱 Install
-        </button>
+        {shouldShowInstallButton && (
+          <button 
+            onClick={onInstallClick}
+            className="br-install-btn"
+            title="Install Brain Rizz App"
+          >
+            📱 Install
+          </button>
+        )}
       </nav>
     </header>
   );
