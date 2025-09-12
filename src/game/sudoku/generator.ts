@@ -1,5 +1,5 @@
 import { BOARD_SIZE, BOX_SIZE, VALID_NUMBERS, TRANSFORMATION_TYPES } from './constants';
-import { isValidMove, isValidBoard, isComplete } from './validators';
+import { isValidMove, isValidBoard, hasUniqueSolution, isComplete } from './validators';
 
 /**
  * Generates a valid solved Sudoku board using backtracking algorithm

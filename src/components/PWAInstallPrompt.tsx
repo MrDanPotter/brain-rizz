@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './PWAInstallPrompt.css';
-import { isIOS, isInStandalone, setupInstallPrompt } from '../utils/pwaUtils';
-import { BeforeInstallPromptEvent } from '../types/pwa';
-import IOSInstallPrompt from './IOSInstallPrompt';
+
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
 
 interface PWAInstallPromptProps {
   isOpen: boolean;
@@ -13,13 +19,16 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ isOpen, onClose }) 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    // Only set up the install prompt for non-iOS devices
-    if (!isIOS()) {
-      const cleanup = setupInstallPrompt((event) => {
-        setDeferredPrompt(event);
-      });
-      return cleanup;
-    }
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
   }, []);
 
   const handleInstallClick = async () => {
@@ -44,12 +53,6 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ isOpen, onClose }) 
 
   if (!isOpen) return null;
 
-  // Show iOS-specific install prompt for iOS devices
-  if (isIOS() && !isInStandalone()) {
-    return <IOSInstallPrompt isOpen={isOpen} onClose={onClose} />;
-  }
-
-  // Show standard PWA install prompt for Android/Desktop
   return (
     <div className="pwa-modal-overlay" onClick={handleDismiss}>
       <div className="pwa-modal-content" onClick={(e) => e.stopPropagation()}>

@@ -50,6 +50,13 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame }) => {
     gameStateRef.current = 'playing';
   }, []);
 
+  // Start game when startGame prop becomes true
+  useEffect(() => {
+    if (startGame) {
+      startGameFunction();
+    }
+  }, [startGame]);
+
   const generateStimulus = useCallback((): StroopStimulus => {
     const word = COLORS[Math.floor(Math.random() * COLORS.length)];
     const inkColor = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -114,77 +121,6 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame }) => {
     }, 2000);
   }, [generateStimulus]);
 
-  const endGame = useCallback(() => {
-    gameStateRef.current = 'summary';
-    setCurrentStimulus(null);
-    setCountdown(null);
-    canRespondRef.current = false;
-    
-    // Clear all timers
-    if (gameTimerRef.current) clearInterval(gameTimerRef.current);
-    if (stimulusTimerRef.current) clearTimeout(stimulusTimerRef.current);
-    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-    if (blankTimerRef.current) clearTimeout(blankTimerRef.current);
-    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-    
-    // Call the onGameEnd callback with final stats
-    onGameEnd(stats);
-  }, [onGameEnd, stats]);
-
-  // Start game function
-  const startGameFunction = useCallback(() => {
-    setScore(0);
-    setTimeLeft(60);
-    setCountdown(3);
-    setStats({
-      totalPoints: 0,
-      correctGo: 0,
-      falseAlarms: 0,
-      omissions: 0,
-      reactionTimes: []
-    });
-    setLastStimulus('');
-    
-    // Start countdown
-    countdownTimerRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev === null || prev <= 1) {
-          // Countdown finished, start the game
-          setCountdown(null);
-          if (countdownTimerRef.current) {
-            clearInterval(countdownTimerRef.current);
-          }
-          
-          // Start the game timer
-          gameTimerRef.current = setInterval(() => {
-            setTimeLeft(prev => {
-              if (prev <= 1) {
-                endGame();
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          
-          // Start the first stimulus
-          setTimeout(() => {
-            showStimulus();
-          }, 500);
-          
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [endGame, showStimulus]);
-
-  // Start game when startGame prop becomes true
-  useEffect(() => {
-    if (startGame) {
-      startGameFunction();
-    }
-  }, [startGame, startGameFunction]);
-
   const handleResponse = useCallback(() => {
     if (!canRespondRef.current || !currentStimulus) return;
     
@@ -239,7 +175,68 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame }) => {
     }
   }, [handleResponse]);
 
+  const startGameFunction = () => {
+    setScore(0);
+    setTimeLeft(60);
+    setCountdown(3);
+    setStats({
+      totalPoints: 0,
+      correctGo: 0,
+      falseAlarms: 0,
+      omissions: 0,
+      reactionTimes: []
+    });
+    setLastStimulus('');
+    
+    // Start countdown
+    countdownTimerRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          // Countdown finished, start the game
+          setCountdown(null);
+          if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current);
+          }
+          
+          // Start the game timer
+          gameTimerRef.current = setInterval(() => {
+            setTimeLeft(prev => {
+              if (prev <= 1) {
+                endGame();
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          // Start the first stimulus
+          setTimeout(() => {
+            showStimulus();
+          }, 500);
+          
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
+  const endGame = () => {
+    gameStateRef.current = 'summary';
+    setCurrentStimulus(null);
+    setCountdown(null);
+    canRespondRef.current = false;
+    
+    // Clear all timers
+    if (gameTimerRef.current) clearInterval(gameTimerRef.current);
+    if (stimulusTimerRef.current) clearTimeout(stimulusTimerRef.current);
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    if (blankTimerRef.current) clearTimeout(blankTimerRef.current);
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    
+    // Call the onGameEnd callback with final stats
+    onGameEnd(stats);
+  };
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyPress);
@@ -269,6 +266,10 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame }) => {
     return colorMap[color] || color;
   };
 
+  const getAverageReactionTime = () => {
+    if (stats.reactionTimes.length === 0) return 0;
+    return Math.round(stats.reactionTimes.reduce((a, b) => a + b, 0) / stats.reactionTimes.length);
+  };
 
   return (
     <div className={`stroop-game ${feedback !== 'none' ? `feedback-${feedback}` : ''}`}>
