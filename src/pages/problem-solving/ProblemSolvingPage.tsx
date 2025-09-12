@@ -31,7 +31,7 @@ const ProblemSolvingPage: React.FC = () => {
         gameEngineRef.current.destroy();
       }
     };
-  }, []);
+  }, [config]);
 
   // Update game engine when config changes
   useEffect(() => {

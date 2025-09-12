@@ -7,7 +7,7 @@ import MemoryPage from './pages/memory';
 import AttentionPage from './pages/attention';
 import ProblemSolvingPage from './pages/problem-solving';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
-import { isIOS, isInStandalone } from './utils/pwaUtils';
+import { isInStandalone } from './utils/pwaUtils';
 
 interface Section {
   name: string;

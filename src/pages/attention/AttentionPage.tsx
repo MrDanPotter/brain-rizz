@@ -14,7 +14,7 @@ interface GameStats {
 
 const AttentionPage: React.FC = () => {
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'summary'>('menu');
-  const [colorBlindMode, setColorBlindMode] = useState(false);
+  const [colorBlindMode] = useState(false);
   const [finalStats, setFinalStats] = useState<GameStats | null>(null);
   const [shouldStartGame, setShouldStartGame] = useState(false);
 

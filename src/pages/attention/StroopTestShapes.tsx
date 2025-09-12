@@ -51,12 +51,59 @@ const StroopTestShapes: React.FC<StroopTestShapesProps> = ({ onGameEnd, startGam
     gameStateRef.current = 'playing';
   }, []);
 
+  // Start game function
+  const startGameFunction = useCallback(() => {
+    setScore(0);
+    setTimeLeft(60);
+    setCountdown(3);
+    setStats({
+      totalPoints: 0,
+      correctGo: 0,
+      falseAlarms: 0,
+      omissions: 0,
+      reactionTimes: []
+    });
+    setLastStimulus('');
+    
+    // Start countdown
+    countdownTimerRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          // Countdown finished, start the game
+          setCountdown(null);
+          if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current);
+          }
+          
+          // Start the game timer
+          gameTimerRef.current = setInterval(() => {
+            setTimeLeft(prev => {
+              if (prev <= 1) {
+                endGame();
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          // Start the first stimulus
+          setTimeout(() => {
+            showStimulus();
+          }, 500);
+          
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
   // Start game when startGame prop becomes true
   useEffect(() => {
     if (startGame) {
       startGameFunction();
     }
-  }, [startGame]);
+  }, [startGame, startGameFunction]);
 
   const generateStimulus = useCallback((): StroopStimulus => {
     const word = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -176,51 +223,6 @@ const StroopTestShapes: React.FC<StroopTestShapesProps> = ({ onGameEnd, startGam
     }
   }, [handleResponse]);
 
-  const startGameFunction = () => {
-    setScore(0);
-    setTimeLeft(60);
-    setCountdown(3);
-    setStats({
-      totalPoints: 0,
-      correctGo: 0,
-      falseAlarms: 0,
-      omissions: 0,
-      reactionTimes: []
-    });
-    setLastStimulus('');
-    
-    // Start countdown
-    countdownTimerRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev === null || prev <= 1) {
-          // Countdown finished, start the game
-          setCountdown(null);
-          if (countdownTimerRef.current) {
-            clearInterval(countdownTimerRef.current);
-          }
-          
-          // Start the game timer
-          gameTimerRef.current = setInterval(() => {
-            setTimeLeft(prev => {
-              if (prev <= 1) {
-                endGame();
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          
-          // Start the first stimulus
-          setTimeout(() => {
-            showStimulus();
-          }, 500);
-          
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
 
   const endGame = () => {
     gameStateRef.current = 'summary';
@@ -291,10 +293,6 @@ const StroopTestShapes: React.FC<StroopTestShapesProps> = ({ onGameEnd, startGam
     }
   };
 
-  const getAverageReactionTime = () => {
-    if (stats.reactionTimes.length === 0) return 0;
-    return Math.round(stats.reactionTimes.reduce((a, b) => a + b, 0) / stats.reactionTimes.length);
-  };
 
   return (
     <div className={`stroop-game ${feedback !== 'none' ? `feedback-${feedback}` : ''}`}>

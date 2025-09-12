@@ -54,7 +54,6 @@ const MemoryPage: React.FC = () => {
   // Calculate tile count based on difficulty and grid size
   const getTileCountForDifficulty = useCallback((gridSize: number, difficulty: 'easy' | 'medium' | 'hard') => {
     const min = gridSize; // N
-    const max = gridSize * (gridSize - 1); // N*(N-1)
     const hardMax = gridSize * (gridSize - 2); // N*(N-2)
     
     switch (difficulty) {
@@ -67,13 +66,6 @@ const MemoryPage: React.FC = () => {
       default:
         return min;
     }
-  }, []);
-
-  // Calculate valid tile count range based on grid size
-  const getTileCountRange = useCallback((gridSize: number) => {
-    const min = gridSize;
-    const max = gridSize * (gridSize - 1);
-    return { min, max };
   }, []);
 
   // Update grid size

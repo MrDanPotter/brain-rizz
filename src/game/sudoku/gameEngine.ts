@@ -1,9 +1,6 @@
 import { 
   SudokuGameState, 
   SudokuConfig, 
-  SudokuCell, 
-  SudokuBoard, 
-  DifficultyLevel,
   SudokuStats 
 } from './types';
 import { DIFFICULTY_CONFIGS } from './constants';

@@ -1,6 +1,6 @@
 import { BOARD_SIZE, DIFFICULTY_CONFIGS } from './constants';
 import { SudokuCell, DifficultyLevel } from './types';
-import { hasUniqueSolution, isValidMove } from './validators';
+import { hasUniqueSolution } from './validators';
 
 /**
  * Creates a Sudoku puzzle by strategically removing cells from a solved board
