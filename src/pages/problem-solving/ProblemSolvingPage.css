@@ -146,13 +146,10 @@
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
-  gap: 1px;
   background: rgba(255, 255, 255, 0.5);
   border: 3px solid rgba(255, 255, 255, 0.8);
-  border-right: 2px solid rgba(0, 0, 0, 0.8);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.8);
-  border-radius: 8px;
-  padding: 3px;
+  border-radius: 12px;
+  padding: 10px;
   max-width: 450px;
   max-height: 450px;
   width: 100%;
@@ -161,15 +158,27 @@
 }
 
 /* 3x3 section borders - right borders for columns 3 and 6 */
-.sudoku-cell:nth-child(3n) {
+.sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
   border-right: 2px solid rgba(0, 0, 0, 0.8);
 }
 
-/* 3x3 section borders - bottom borders for rows 3, 6, and 9 */
+/* 3x3 section borders - left borders for columns 4 and 7 */
+.sudoku-cell:nth-child(9n+4),
+.sudoku-cell:nth-child(9n+7) {
+  border-left: 2px solid rgba(0, 0, 0, 0.8);
+}
+
+
+/* 3x3 section borders - bottom borders for rows 3, 6 */
 .sudoku-cell:nth-child(n+19):nth-child(-n+27),
-.sudoku-cell:nth-child(n+46):nth-child(-n+54),
-.sudoku-cell:nth-child(n+73):nth-child(-n+81) {
+.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
   border-bottom: 2px solid rgba(0, 0, 0, 0.8);
+}
+
+/* 3x3 section borders - top borders for rows 4 and 7 */
+.sudoku-cell:nth-child(n+28):nth-child(-n+36),
+.sudoku-cell:nth-child(n+55):nth-child(-n+63) {
+  border-top: 2px solid rgba(0, 0, 0, 0.8);
 }
 
 .sudoku-cell {
