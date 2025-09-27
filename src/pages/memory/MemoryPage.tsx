@@ -77,13 +77,6 @@ const MemoryPage: React.FC = () => {
     return tiles;
   }, []);
 
-  // End session
-  const endSession = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      phase: 'sessionEnd'
-    }));
-  }, []);
 
   // Start inactivity timer
   const startInactivityTimer = useCallback(() => {
@@ -92,18 +85,13 @@ const MemoryPage: React.FC = () => {
     }
     
     inactivityTimerRef.current = window.setTimeout(() => {
-      setGameState(prev => ({
-        ...prev,
-        consecutiveInactiveRounds: prev.consecutiveInactiveRounds + 1
-      }));
-      
-      // Check if we should end session or submit round
       setGameState(prev => {
-        if (prev.consecutiveInactiveRounds >= 1) {
+        const newConsecutiveInactiveRounds = prev.consecutiveInactiveRounds + 1;
+        
+        if (newConsecutiveInactiveRounds >= 1) {
           return { ...prev, phase: 'sessionEnd' };
         } else {
-          // Submit round logic will be handled in useEffect
-          return prev;
+          return { ...prev, consecutiveInactiveRounds: newConsecutiveInactiveRounds };
         }
       });
     }, config.inactivityTimeout);
@@ -157,35 +145,52 @@ const MemoryPage: React.FC = () => {
 
   // Submit round and calculate score
   const submitRound = useCallback(() => {
-    if (gameState.phase !== 'recall') return;
+    // Clear any existing timers
+    if (inactivityTimerRef.current) {
+      window.clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+    if (stimulusTimerRef.current) {
+      window.clearTimeout(stimulusTimerRef.current);
+      stimulusTimerRef.current = null;
+    }
     
-    const correctTiles = new Set<string>();
-    const incorrectTiles = new Set<string>();
-    
-    // Check each selected tile
-    gameState.selectedTiles.forEach(tileKey => {
-      if (gameState.highlightedTiles.has(tileKey)) {
-        correctTiles.add(tileKey);
-      } else {
-        incorrectTiles.add(tileKey);
-      }
+    setGameState(prev => {
+      if (prev.phase !== 'recall') return prev;
+      
+      const correctTiles = new Set<string>();
+      const incorrectTiles = new Set<string>();
+      
+      // Check each selected tile
+      prev.selectedTiles.forEach(tileKey => {
+        if (prev.highlightedTiles.has(tileKey)) {
+          correctTiles.add(tileKey);
+        } else {
+          incorrectTiles.add(tileKey);
+        }
+      });
+      
+      // Calculate score
+      const correctCount = correctTiles.size;
+      const roundScore = correctCount * 250;
+      const flawlessBonus = correctCount === prev.highlightedTiles.size && 
+                           prev.selectedTiles.size === prev.highlightedTiles.size ? 100 : 0;
+      const totalRoundScore = roundScore + flawlessBonus;
+      
+      return {
+        ...prev,
+        phase: 'feedback',
+        correctTiles,
+        incorrectTiles,
+        roundScore: totalRoundScore,
+        totalScore: prev.totalScore + totalRoundScore
+      };
     });
     
-    // Calculate score
-    const correctCount = correctTiles.size;
-    const roundScore = correctCount * 250;
-    const flawlessBonus = correctCount === gameState.highlightedTiles.size && 
-                         gameState.selectedTiles.size === gameState.highlightedTiles.size ? 100 : 0;
-    const totalRoundScore = roundScore + flawlessBonus;
-    
-    setGameState(prev => ({
-      ...prev,
-      phase: 'feedback',
-      correctTiles,
-      incorrectTiles,
-      roundScore: totalRoundScore,
-      totalScore: prev.totalScore + totalRoundScore
-    }));
+    // Clear any existing feedback timer
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current);
+    }
     
     // Show feedback for 1 second
     feedbackTimerRef.current = window.setTimeout(() => {
@@ -196,22 +201,33 @@ const MemoryPage: React.FC = () => {
       
       // Show round score for 2 seconds
       window.setTimeout(() => {
-        if (gameState.currentRound >= config.sessionRounds) {
-          endSession();
-        } else {
-          setGameState(prev => ({
-            ...prev,
-            phase: 'stimulus',
-            currentRound: prev.currentRound + 1
-          }));
-          // Start next round will be handled in useEffect
-        }
+        setGameState(prev => {
+          if (prev.currentRound >= config.sessionRounds) {
+            return { ...prev, phase: 'sessionEnd' };
+          } else {
+            return {
+              ...prev,
+              phase: 'stimulus',
+              currentRound: prev.currentRound + 1,
+              highlightedTiles: new Set(), // Clear old highlighted tiles
+              selectedTiles: new Set(),
+              correctTiles: new Set(),
+              incorrectTiles: new Set()
+            };
+          }
+        });
       }, 2000);
     }, 1000);
-  }, [gameState, config.sessionRounds, endSession]);
+  }, [config.sessionRounds]);
 
   // Start a new round
   const startRound = useCallback(() => {
+    // Clear any existing stimulus timer
+    if (stimulusTimerRef.current) {
+      window.clearTimeout(stimulusTimerRef.current);
+      stimulusTimerRef.current = null;
+    }
+    
     const { gridSize, tileCount } = getDifficultyConfig(config.difficulty);
     const highlightedTiles = generatePattern(gridSize, tileCount);
     
@@ -255,17 +271,14 @@ const MemoryPage: React.FC = () => {
     startRound();
   }, [startRound]);
 
-  // Handle inactivity timeout
-  useEffect(() => {
-    if (gameState.consecutiveInactiveRounds >= 1 && gameState.phase === 'recall') {
-      submitRound();
-    }
-  }, [gameState.consecutiveInactiveRounds, gameState.phase, submitRound]);
-
-  // Handle round transitions
+  // Handle round transitions - start next round when phase changes to stimulus
   useEffect(() => {
     if (gameState.phase === 'stimulus' && gameState.currentRound > 1) {
-      startRound();
+      // Small delay to ensure state is fully updated
+      const timer = setTimeout(() => {
+        startRound();
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [gameState.phase, gameState.currentRound, startRound]);
 

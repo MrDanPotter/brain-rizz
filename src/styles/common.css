@@ -119,6 +119,33 @@
   flex-shrink: 0;
 }
 
+.progress-display {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.game-instructions {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-instructions p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* Score and time displays */
 .score-display,
 .time-display {
