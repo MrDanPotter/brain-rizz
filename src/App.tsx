@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css';
 
 // Import page components
@@ -10,30 +9,36 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 interface Section {
   name: string;
-  path: string;
+  id: string;
 }
 
 const sections: Section[] = [
-  { name: 'Memory', path: '/memory' },
-  { name: 'Attention', path: '/attention' },
-  { name: 'Problem-Solving', path: '/problem-solving' },
+  { name: 'Memory', id: 'memory' },
+  // { name: 'Attention', id: 'attention' }, // Commented out for now
+  { name: 'Problem-Solving', id: 'problem-solving' },
 ];
 
-function Header({ onInstallClick }: { onInstallClick: () => void }): React.ReactElement {
-  const location = useLocation();
-
+function Header({ 
+  onInstallClick, 
+  currentSection, 
+  onSectionChange 
+}: { 
+  onInstallClick: () => void;
+  currentSection: string;
+  onSectionChange: (sectionId: string) => void;
+}): React.ReactElement {
   return (
     <header className="br-header">
       <h1 className="br-title">Brain Rizz</h1>
       <nav className="br-nav">
         {sections.map((section) => (
-          <Link
+          <button
             key={section.name}
-            to={section.path}
-            className={`br-nav-btn${location.pathname === section.path ? ' active' : ''}`}
+            onClick={() => onSectionChange(section.id)}
+            className={`br-nav-btn${currentSection === section.id ? ' active' : ''}`}
           >
             {section.name}
-          </Link>
+          </button>
         ))}
         <button 
           onClick={onInstallClick}
@@ -49,6 +54,7 @@ function Header({ onInstallClick }: { onInstallClick: () => void }): React.React
 
 function App(): React.ReactElement {
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [currentSection, setCurrentSection] = useState('memory');
 
   const handleInstallClick = () => {
     console.log('Install button clicked, opening modal...');
@@ -60,20 +66,35 @@ function App(): React.ReactElement {
     setShowInstallModal(false);
   };
 
-  return (
-    <Router>
-      <Header onInstallClick={handleInstallClick} />
-      <main className="br-main">
-        <Routes>
-          <Route path="/memory" element={<MemoryPage />} />
-          <Route path="/attention" element={<AttentionPage />} />
-          <Route path="/problem-solving" element={<ProblemSolvingPage />} />
-          <Route path="*" element={<MemoryPage />} />
-        </Routes>
+  const handleSectionChange = (sectionId: string) => {
+    setCurrentSection(sectionId);
+  };
 
+  const renderCurrentSection = () => {
+    switch (currentSection) {
+      case 'memory':
+        return <MemoryPage />;
+      case 'attention':
+        return <AttentionPage />;
+      case 'problem-solving':
+        return <ProblemSolvingPage />;
+      default:
+        return <MemoryPage />;
+    }
+  };
+
+  return (
+    <>
+      <Header 
+        onInstallClick={handleInstallClick} 
+        currentSection={currentSection}
+        onSectionChange={handleSectionChange}
+      />
+      <main className="br-main">
+        {renderCurrentSection()}
       </main>
       <PWAInstallPrompt isOpen={showInstallModal} onClose={handleCloseModal} />
-    </Router>
+    </>
   );
 }
 
