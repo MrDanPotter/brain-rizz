@@ -143,71 +143,19 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
     canRespondRef.current = true;
     startTimeRef.current = Date.now();
     
-    // Clear trial after 2 seconds if no response
+    // Clear trial after fixed 2 seconds regardless of user input
     stimulusTimerRef.current = setTimeout(() => {
-      if (canRespondRef.current) {
-        // Check for omissions - congruent words that weren't clicked
-        trial.stimuli.forEach(stimulus => {
-          if (stimulus.isCongruent) {
-            setStats(prev => ({
-              ...prev,
-              omissions: prev.omissions + 1
-            }));
-          }
-        });
-        setCurrentTrial(null);
-        canRespondRef.current = false;
-        
-        // Show blank screen for 500ms
-        blankTimerRef.current = setTimeout(() => {
-          if (gameStateRef.current === 'playing') {
-            showTrial();
-          }
-        }, 500);
-      }
-    }, 2000);
-  }, [generateTrial]);
-
-  const handleResponse = useCallback(() => {
-    if (!canRespondRef.current || !currentTrial || difficulty !== 'easy') return;
-    
-    const reactionTime = Date.now() - startTimeRef.current;
-    canRespondRef.current = false;
-    
-    // Clear the stimulus timer
-    if (stimulusTimerRef.current) {
-      clearTimeout(stimulusTimerRef.current);
-    }
-    
-    // For easy mode, check if any word is congruent
-    const hasCongruent = currentTrial.stimuli.some(stimulus => stimulus.isCongruent);
-    
-    if (hasCongruent) {
-      // Correct Go
-      setScore(prev => prev + 1);
-      setStats(prev => ({
-        ...prev,
-        totalPoints: prev.totalPoints + 1,
-        correctGo: prev.correctGo + 1,
-        reactionTimes: [...prev.reactionTimes, reactionTime]
-      }));
-      setFeedback('correct');
-    } else {
-      // False alarm
-      setScore(prev => prev - 1);
-      setStats(prev => ({
-        ...prev,
-        totalPoints: prev.totalPoints - 1,
-        falseAlarms: prev.falseAlarms + 1
-      }));
-      setFeedback('incorrect');
-    }
-    
-    setCurrentTrial(null);
-    
-    // Show feedback for 150ms
-    feedbackTimerRef.current = setTimeout(() => {
-      setFeedback('none');
+      // Check for omissions - congruent words that weren't clicked
+      trial.stimuli.forEach(stimulus => {
+        if (stimulus.isCongruent) {
+          setStats(prev => ({
+            ...prev,
+            omissions: prev.omissions + 1
+          }));
+        }
+      });
+      setCurrentTrial(null);
+      canRespondRef.current = false;
       
       // Show blank screen for 500ms
       blankTimerRef.current = setTimeout(() => {
@@ -215,18 +163,14 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
           showTrial();
         }
       }, 500);
-    }, 150);
-  }, [currentTrial, difficulty, showTrial]);
+    }, 2000);
+  }, [generateTrial]);
+
 
   const handleWordClick = useCallback((wordIndex: number) => {
-    if (!canRespondRef.current || !currentTrial || difficulty === 'easy') return;
+    if (!canRespondRef.current || !currentTrial) return;
     
     const reactionTime = Date.now() - startTimeRef.current;
-    
-    // Clear the stimulus timer
-    if (stimulusTimerRef.current) {
-      clearTimeout(stimulusTimerRef.current);
-    }
     
     const stimulus = currentTrial.stimuli[wordIndex];
     const combinationKey = `${stimulus.word}-${stimulus.inkColor}`;
@@ -243,18 +187,9 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
         }));
         setFeedback('incorrect');
       } else {
-        // Check if this combination was already selected in previous trials
-        if (selectedCombinations.has(combinationKey)) {
-          // Already selected this combination - false alarm
-          setScore(prev => prev - 1);
-          setStats(prev => ({
-            ...prev,
-            totalPoints: prev.totalPoints - 1,
-            falseAlarms: prev.falseAlarms + 1
-          }));
-          setFeedback('incorrect');
-        } else {
-          // New correct combination
+        // For easy mode, just check if it's a new click
+        if (difficulty === 'easy') {
+          // New correct click
           setScore(prev => prev + 1);
           setStats(prev => ({
             ...prev,
@@ -262,9 +197,34 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
             correctGo: prev.correctGo + 1,
             reactionTimes: [...prev.reactionTimes, reactionTime]
           }));
-          setSelectedCombinations(prev => new Set([...prev, combinationKey]));
           setClickedWords(prev => new Set([...prev, wordIndex]));
           setFeedback('correct');
+          
+          // Don't end trial - let it run for full duration
+        } else {
+          // Check if this combination was already selected in previous trials (medium/hard mode)
+          if (selectedCombinations.has(combinationKey)) {
+            // Already selected this combination - false alarm
+            setScore(prev => prev - 1);
+            setStats(prev => ({
+              ...prev,
+              totalPoints: prev.totalPoints - 1,
+              falseAlarms: prev.falseAlarms + 1
+            }));
+            setFeedback('incorrect');
+          } else {
+            // New correct combination
+            setScore(prev => prev + 1);
+            setStats(prev => ({
+              ...prev,
+              totalPoints: prev.totalPoints + 1,
+              correctGo: prev.correctGo + 1,
+              reactionTimes: [...prev.reactionTimes, reactionTime]
+            }));
+            setSelectedCombinations(prev => new Set([...prev, combinationKey]));
+            setClickedWords(prev => new Set([...prev, wordIndex]));
+            setFeedback('correct');
+          }
         }
       }
     } else {
@@ -278,38 +238,10 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
       setFeedback('incorrect');
     }
     
-    // Check if all congruent words have been clicked
-    const congruentWords = currentTrial.stimuli.filter(s => s.isCongruent);
-    const clickedCongruentWords = congruentWords.filter((_, index) => {
-      const originalIndex = currentTrial.stimuli.findIndex(s => s === congruentWords[index]);
-      return clickedWords.has(originalIndex);
-    });
-    
-    if (clickedCongruentWords.length === congruentWords.length) {
-      // All congruent words clicked, end trial
-      canRespondRef.current = false;
-      setCurrentTrial(null);
-      
-      // Show feedback for 150ms
-      feedbackTimerRef.current = setTimeout(() => {
-        setFeedback('none');
-        
-        // Show blank screen for 500ms
-        blankTimerRef.current = setTimeout(() => {
-          if (gameStateRef.current === 'playing') {
-            showTrial();
-          }
-        }, 500);
-      }, 150);
-    }
+    // For medium/hard mode, don't end trial early - let it run for full duration
+    // User clicks just provide feedback and scoring
   }, [currentTrial, selectedCombinations, clickedWords, difficulty]);
 
-  const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    if (event.code === 'Space') {
-      event.preventDefault();
-      handleResponse();
-    }
-  }, [handleResponse]);
 
   const startGameFunction = () => {
     setScore(0);
@@ -380,12 +312,6 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
     onGameEnd(stats);
   };
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [handleKeyPress]);
 
   useEffect(() => {
     return () => {
@@ -438,8 +364,8 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
                 {currentTrial.stimuli.map((stimulus, index) => (
                   <div
                     key={index}
-                    className={`stimulus-word ${difficulty !== 'easy' ? 'clickable' : ''} ${clickedWords.has(index) ? 'clicked' : ''}`}
-                    onClick={difficulty !== 'easy' ? () => handleWordClick(index) : undefined}
+                    className={`stimulus-word clickable ${clickedWords.has(index) ? 'clicked' : ''}`}
+                    onClick={() => handleWordClick(index)}
                     style={{ 
                       color: getColorStyle(stimulus.inkColor)
                     }}
@@ -456,25 +382,17 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
         )}
       </div>
       
-      {difficulty === 'easy' && (
-        <div className="game-controls">
-          <button 
-            className="response-btn"
-            onClick={handleResponse}
-            disabled={!canRespondRef.current || countdown !== null}
-            aria-label="Press when word matches color"
-          >
-            Press when word matches color
-          </button>
-        </div>
-      )}
-      
-      {(difficulty === 'medium' || difficulty === 'hard') && (
-        <div className="game-instructions">
+      <div className="game-instructions">
+        {difficulty === 'easy' && (
           <p>Click on the word when it matches its color</p>
-          <p>Find {targetCount} different combinations</p>
-        </div>
-      )}
+        )}
+        {(difficulty === 'medium' || difficulty === 'hard') && (
+          <>
+            <p>Click on the word when it matches its color</p>
+            <p>Find {targetCount} different combinations</p>
+          </>
+        )}
+      </div>
     </div>
   );
 };

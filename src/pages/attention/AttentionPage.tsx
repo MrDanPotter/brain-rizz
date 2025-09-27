@@ -46,46 +46,20 @@ const AttentionPage: React.FC = () => {
         <div className="stroop-menu">
           <div className="menu-card">
             <h2>Stroop Test</h2>
-            <p>Press SPACE only when the word matches its color</p>
+            <p>Click on words that match their color</p>
             
-            <div className="difficulty-selection">
-              <h3>Select Difficulty</h3>
-              <div className="difficulty-options">
-                <label className="difficulty-option">
-                  <input
-                    type="radio"
-                    name="difficulty"
-                    value="easy"
-                    checked={difficulty === 'easy'}
-                    onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                  />
-                  <span className="difficulty-label">Easy</span>
-                  <span className="difficulty-desc">Press SPACE when word matches color</span>
-                </label>
-                
-                <label className="difficulty-option">
-                  <input
-                    type="radio"
-                    name="difficulty"
-                    value="medium"
-                    checked={difficulty === 'medium'}
-                    onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                  />
-                  <span className="difficulty-label">Medium</span>
-                  <span className="difficulty-desc">Click 3 different words/colors</span>
-                </label>
-                
-                <label className="difficulty-option">
-                  <input
-                    type="radio"
-                    name="difficulty"
-                    value="hard"
-                    checked={difficulty === 'hard'}
-                    onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                  />
-                  <span className="difficulty-label">Hard</span>
-                  <span className="difficulty-desc">Click 6 different words/colors</span>
-                </label>
+            <div className="config-options">
+              <div className="config-group">
+                <label htmlFor="difficulty">Difficulty:</label>
+                <select
+                  id="difficulty"
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+                >
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
               </div>
             </div>
             
@@ -94,7 +68,7 @@ const AttentionPage: React.FC = () => {
               <li>You'll see color words (RED, BLUE, GREEN, YELLOW)</li>
               {difficulty === 'easy' && (
                 <>
-                  <li>Press SPACE only when the word matches its ink color</li>
+                  <li>Click on the word when it matches its ink color</li>
                   <li>Do nothing when the word and color don't match</li>
                 </>
               )}
