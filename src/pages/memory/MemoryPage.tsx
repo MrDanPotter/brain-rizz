@@ -3,9 +3,7 @@ import './MemoryPage.css';
 import '../../styles/common.css';
 
 interface GameConfig {
-  gridSize: number;
   difficulty: 'easy' | 'medium' | 'hard';
-  stimulusTime: number;
   sessionRounds: number;
   inactivityTimeout: number;
 }
@@ -26,9 +24,7 @@ interface GameState {
 
 const MemoryPage: React.FC = () => {
   const [config, setConfig] = useState<GameConfig>({
-    gridSize: 6,
     difficulty: 'easy',
-    stimulusTime: 1000, // 1 second in milliseconds
     sessionRounds: 5,
     inactivityTimeout: 15000
   });
@@ -51,57 +47,20 @@ const MemoryPage: React.FC = () => {
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
 
-  // Calculate tile count based on difficulty and grid size
-  const getTileCountForDifficulty = useCallback((gridSize: number, difficulty: 'easy' | 'medium' | 'hard') => {
-    const min = gridSize; // N
-    const max = gridSize * (gridSize - 1); // N*(N-1)
-    const hardMax = gridSize * (gridSize - 2); // N*(N-2)
-    
+  // Get grid size and tile count based on difficulty
+  const getDifficultyConfig = useCallback((difficulty: 'easy' | 'medium' | 'hard') => {
     switch (difficulty) {
       case 'easy':
-        return min;
-      case 'hard':
-        return hardMax;
+        return { gridSize: 5, tileCount: 7 };
       case 'medium':
-        return Math.floor((min + hardMax) / 2);
+        return { gridSize: 5, tileCount: 10 };
+      case 'hard':
+        return { gridSize: 6, tileCount: 12 };
       default:
-        return min;
+        return { gridSize: 5, tileCount: 7 };
     }
   }, []);
 
-  // Calculate valid tile count range based on grid size
-  const getTileCountRange = useCallback((gridSize: number) => {
-    const min = gridSize;
-    const max = gridSize * (gridSize - 1);
-    return { min, max };
-  }, []);
-
-  // Update grid size
-  const handleGridSizeChange = useCallback((newGridSize: number) => {
-    setConfig(prev => ({
-      ...prev,
-      gridSize: newGridSize
-    }));
-  }, []);
-
-  // Handle display time increments/decrements
-  const handleDisplayTimeChange = useCallback((increment: boolean) => {
-    setConfig(prev => {
-      const currentSeconds = prev.stimulusTime / 1000;
-      let newSeconds: number;
-      
-      if (increment) {
-        newSeconds = Math.min(currentSeconds + 0.25, 2.5);
-      } else {
-        newSeconds = Math.max(currentSeconds - 0.25, 0.5);
-      }
-      
-      return {
-        ...prev,
-        stimulusTime: Math.round(newSeconds * 1000)
-      };
-    });
-  }, []);
 
   // Generate random highlighted tiles
   const generatePattern = useCallback((size: number, count: number): Set<string> => {
@@ -253,8 +212,8 @@ const MemoryPage: React.FC = () => {
 
   // Start a new round
   const startRound = useCallback(() => {
-    const tileCount = getTileCountForDifficulty(config.gridSize, config.difficulty);
-    const highlightedTiles = generatePattern(config.gridSize, tileCount);
+    const { gridSize, tileCount } = getDifficultyConfig(config.difficulty);
+    const highlightedTiles = generatePattern(gridSize, tileCount);
     
     setGameState(prev => ({
       ...prev,
@@ -267,15 +226,15 @@ const MemoryPage: React.FC = () => {
       lastActivityTime: Date.now()
     }));
 
-    // Clear stimulus after configured time
+    // Clear stimulus after 1 second
     stimulusTimerRef.current = window.setTimeout(() => {
       setGameState(prev => ({
         ...prev,
         phase: 'recall'
       }));
       startInactivityTimer();
-    }, config.stimulusTime);
-  }, [config.gridSize, config.difficulty, config.stimulusTime, generatePattern, startInactivityTimer, getTileCountForDifficulty]);
+    }, 1000);
+  }, [config.difficulty, generatePattern, startInactivityTimer, getDifficultyConfig]);
 
   // Start new session
   const startSession = useCallback(() => {
@@ -379,19 +338,6 @@ const MemoryPage: React.FC = () => {
           
           <div className="config-options">
             <div className="config-group">
-              <label htmlFor="gridSize">Grid Size:</label>
-              <select
-                id="gridSize"
-                value={config.gridSize}
-                onChange={(e) => handleGridSizeChange(parseInt(e.target.value))}
-              >
-                {[4, 5, 6, 7].map(size => (
-                  <option key={size} value={size}>{size} × {size}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="config-group">
               <label htmlFor="difficulty">Difficulty:</label>
               <select
                 id="difficulty"
@@ -405,29 +351,6 @@ const MemoryPage: React.FC = () => {
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
-            </div>
-            
-            <div className="config-group">
-              <label htmlFor="stimulusTime">Display Time:</label>
-              <div className="display-time-container">
-                <button
-                  className="time-btn minus-btn"
-                  onClick={() => handleDisplayTimeChange(false)}
-                  aria-label="Decrease display time by 0.25 seconds"
-                >
-                  −
-                </button>
-                <div className="time-display">
-                  {(config.stimulusTime / 1000).toFixed(2)}s
-                </div>
-                <button
-                  className="time-btn plus-btn"
-                  onClick={() => handleDisplayTimeChange(true)}
-                  aria-label="Increase display time by 0.25 seconds"
-                >
-                  +
-                </button>
-              </div>
             </div>
           </div>
           
@@ -481,7 +404,7 @@ const MemoryPage: React.FC = () => {
         
         {gameState.phase === 'recall' && (
           <button className="submit-btn" onClick={submitRound}>
-            Submit ({gameState.selectedTiles.size}/{getTileCountForDifficulty(config.gridSize, config.difficulty)})
+            Submit ({gameState.selectedTiles.size}/{getDifficultyConfig(config.difficulty).tileCount})
           </button>
         )}
       </div>
@@ -490,12 +413,12 @@ const MemoryPage: React.FC = () => {
         <div 
           className="game-grid"
           style={{
-            gridTemplateColumns: `repeat(${config.gridSize}, 1fr)`,
-            gridTemplateRows: `repeat(${config.gridSize}, 1fr)`
+            gridTemplateColumns: `repeat(${getDifficultyConfig(config.difficulty).gridSize}, 1fr)`,
+            gridTemplateRows: `repeat(${getDifficultyConfig(config.difficulty).gridSize}, 1fr)`
           }}
         >
-          {Array.from({ length: config.gridSize }, (_, row) =>
-            Array.from({ length: config.gridSize }, (_, col) => renderCell(row, col))
+          {Array.from({ length: getDifficultyConfig(config.difficulty).gridSize }, (_, row) =>
+            Array.from({ length: getDifficultyConfig(config.difficulty).gridSize }, (_, col) => renderCell(row, col))
           )}
         </div>
       </div>
