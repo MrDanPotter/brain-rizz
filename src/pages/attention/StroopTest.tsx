@@ -33,7 +33,9 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
   const [currentTrial, setCurrentTrial] = useState<StroopTrial | null>(null);
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect'>('none');
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [currentRound, setCurrentRound] = useState(1);
+  const currentRoundRef = useRef(1);
+  const gameLoopStartedRef = useRef(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [stats, setStats] = useState<GameStats>({
     totalPoints: 0,
@@ -42,12 +44,13 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
     omissions: 0,
     reactionTimes: []
   });
+  const [totalRounds] = useState(12);
   const [lastTrial, setLastTrial] = useState<string>('');
   const [selectedCombinations, setSelectedCombinations] = useState<Set<string>>(new Set());
   const [targetCount, setTargetCount] = useState<number>(0);
   const [clickedWords, setClickedWords] = useState<Set<number>>(new Set());
   
-  const gameTimerRef = useRef<number | null>(null);
+  const roundTimerRef = useRef<number | null>(null);
   const stimulusTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
   const blankTimerRef = useRef<number | null>(null);
@@ -134,37 +137,57 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
     };
   }, [difficulty, generateStimulus, lastTrial]);
 
-  const showTrial = useCallback(() => {
-    const trial = generateTrial();
-    setCurrentTrial(trial);
-    setLastTrial(trial.id);
-    setFeedback('none');
-    setClickedWords(new Set());
-    canRespondRef.current = true;
-    startTimeRef.current = Date.now();
+  const startGameLoop = () => {
+    if (gameLoopStartedRef.current) return; // Prevent multiple starts
+    gameLoopStartedRef.current = true;
     
-    // Clear trial after fixed 2 seconds regardless of user input
-    stimulusTimerRef.current = setTimeout(() => {
-      // Check for omissions - congruent words that weren't clicked
-      trial.stimuli.forEach(stimulus => {
-        if (stimulus.isCongruent) {
-          setStats(prev => ({
-            ...prev,
-            omissions: prev.omissions + 1
-          }));
-        }
-      });
-      setCurrentTrial(null);
-      canRespondRef.current = false;
+    const gameLoop = () => {
+      if (gameStateRef.current !== 'playing') return;
       
-      // Show blank screen for 500ms
-      blankTimerRef.current = setTimeout(() => {
-        if (gameStateRef.current === 'playing') {
-          showTrial();
+      // Start new trial
+      const trial = generateTrial();
+      setCurrentTrial(trial);
+      setLastTrial(trial.id);
+      setFeedback('none');
+      setClickedWords(new Set());
+      canRespondRef.current = true;
+      startTimeRef.current = Date.now();
+      
+      // After 2.5 seconds, end trial
+      setTimeout(() => {
+        if (gameStateRef.current !== 'playing') return;
+        
+        // Check for omissions
+        trial.stimuli.forEach(stimulus => {
+          if (stimulus.isCongruent) {
+            setStats(prev => ({
+              ...prev,
+              omissions: prev.omissions + 1
+            }));
+          }
+        });
+        setCurrentTrial(null);
+        canRespondRef.current = false;
+        
+        // Check if game is over
+        if (currentRoundRef.current >= totalRounds) {
+          endGame();
+          return;
         }
-      }, 500);
-    }, 2000);
-  }, [generateTrial]);
+        
+        // Advance round (only once per trial)
+        if (currentRoundRef.current < totalRounds) {
+          currentRoundRef.current += 1;
+          setCurrentRound(currentRoundRef.current);
+        }
+        
+        // Wait 500ms then start next trial
+        setTimeout(gameLoop, 500);
+      }, 2500);
+    };
+    
+    gameLoop();
+  };
 
 
   const handleWordClick = useCallback((wordIndex: number) => {
@@ -245,7 +268,9 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
 
   const startGameFunction = () => {
     setScore(0);
-    setTimeLeft(60);
+    setCurrentRound(1);
+    currentRoundRef.current = 1;
+    gameLoopStartedRef.current = false;
     setCountdown(3);
     setStats({
       totalPoints: 0,
@@ -272,20 +297,9 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
             clearInterval(countdownTimerRef.current);
           }
           
-          // Start the game timer
-          gameTimerRef.current = setInterval(() => {
-            setTimeLeft(prev => {
-              if (prev <= 1) {
-                endGame();
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          
-          // Start the first trial
+          // Start the game loop
           setTimeout(() => {
-            showTrial();
+            startGameLoop();
           }, 500);
           
           return null;
@@ -302,7 +316,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
     canRespondRef.current = false;
     
     // Clear all timers
-    if (gameTimerRef.current) clearInterval(gameTimerRef.current);
+    if (roundTimerRef.current) clearTimeout(roundTimerRef.current);
     if (stimulusTimerRef.current) clearTimeout(stimulusTimerRef.current);
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     if (blankTimerRef.current) clearTimeout(blankTimerRef.current);
@@ -316,7 +330,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
   useEffect(() => {
     return () => {
       // Cleanup timers on unmount
-      if (gameTimerRef.current) clearInterval(gameTimerRef.current);
+      if (roundTimerRef.current) clearTimeout(roundTimerRef.current);
       if (stimulusTimerRef.current) clearTimeout(stimulusTimerRef.current);
       if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
       if (blankTimerRef.current) clearTimeout(blankTimerRef.current);
@@ -343,7 +357,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, difficult
     <div className={`stroop-game ${feedback !== 'none' ? `feedback-${feedback}` : ''}`}>
       <div className="game-header">
         <div className="score-display">Score: {score}</div>
-        <div className="time-display">Time: {timeLeft}s</div>
+        <div className="round-display">Round {currentRound}/{totalRounds}</div>
         {(difficulty === 'medium' || difficulty === 'hard') && (
           <div className="progress-display">
             Progress: {selectedCombinations.size}/{targetCount}
