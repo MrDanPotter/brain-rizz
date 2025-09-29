@@ -17,11 +17,12 @@ interface GameStats {
 interface StroopTestProps {
   onGameEnd: (stats: GameStats) => void;
   startGame: boolean;
+  wordCount: number;
 }
 
 const COLORS = ['red', 'blue', 'green', 'yellow'];
 
-const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame }) => {
+const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount }) => {
   const [currentStimulus, setCurrentStimulus] = useState<StroopStimulus | null>(null);
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect'>('none');
   const [score, setScore] = useState(0);

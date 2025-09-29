@@ -14,7 +14,7 @@ interface Section {
 
 const sections: Section[] = [
   { name: 'Memory', id: 'memory' },
-  // { name: 'Attention', id: 'attention' }, // Commented out for now
+  { name: 'Attention', id: 'attention' }, // Commented out for now
   { name: 'Problem-Solving', id: 'problem-solving' },
 ];
 

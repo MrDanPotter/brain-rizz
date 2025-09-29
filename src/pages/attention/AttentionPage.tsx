@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './AttentionPage.css';
 import '../../styles/common.css';
 import StroopTest from './StroopTest';
-import StroopTestShapes from './StroopTestShapes';
 
 interface GameStats {
   totalPoints: number;
@@ -14,9 +13,22 @@ interface GameStats {
 
 const AttentionPage: React.FC = () => {
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'summary'>('menu');
-  const [colorBlindMode, setColorBlindMode] = useState(false);
   const [finalStats, setFinalStats] = useState<GameStats | null>(null);
   const [shouldStartGame, setShouldStartGame] = useState(false);
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
+
+  const getDifficultyWordCount = (difficulty: 'easy' | 'medium' | 'hard'): number => {
+    switch (difficulty) {
+      case 'easy':
+        return 1;
+      case 'medium':
+        return 3;
+      case 'hard':
+        return 6;
+      default:
+        return 1;
+    }
+  };
 
   const startGame = () => {
     setGameState('playing');
@@ -45,27 +57,32 @@ const AttentionPage: React.FC = () => {
         <div className="stroop-menu">
           <div className="menu-card">
             <h2>Stroop Test</h2>
-            <p>Press SPACE only when the word matches its color</p>
+            <p>Click the word only when the word matches its color</p>
             
             <h3>Instructions</h3>
             <ul>
               <li>You'll see color words (RED, BLUE, GREEN, YELLOW)</li>
-              <li>Press SPACE only when the word matches its ink color</li>
+              <li>Click the word only when the word matches its ink color</li>
               <li>Do nothing when the word and color don't match</li>
-              <li>Each trial lasts up to 2 seconds</li>
-              <li>Game duration: 60 seconds</li>
+              <li>Each round lasts 2-4 seconds</li>
+              <li>Total rounds: 12</li>
+              <li>3 Difficulty levels (1, 3, and 6 words)</li>
             </ul>
             
-            {/* <div className="accessibility-options">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={colorBlindMode}
-                  onChange={(e) => setColorBlindMode(e.target.checked)}
-                />
-                Color-blind mode (use shapes instead of colors)
-              </label>
-            </div> */}
+            <div className="config-options">
+              <div className="config-group">
+                <label htmlFor="difficulty">Difficulty:</label>
+                <select
+                  id="difficulty"
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+                >
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+            </div>
             
             <button className="start-btn" onClick={startGame}>
               Begin
@@ -117,11 +134,7 @@ const AttentionPage: React.FC = () => {
   }
 
   // Render the appropriate game component based on color-blind mode
-  if (colorBlindMode) {
-    return <StroopTestShapes onGameEnd={handleGameEnd} startGame={shouldStartGame} />;
-  } else {
-    return <StroopTest onGameEnd={handleGameEnd} startGame={shouldStartGame} />;
-  }
+  return <StroopTest onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} />;
 };
 
 export default AttentionPage;
