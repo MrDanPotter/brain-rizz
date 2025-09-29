@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import StroopTestWord from './StroopTestWord';
+import StroopWord from './StroopWord';
+import { generateStroopRounds, getStroopRoundsStats, StroopRound, StroopWord as StroopWordType } from './StroopUtils';
 
 interface StroopStimulus {
   word: string;
@@ -39,12 +40,25 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
   const [testWord3Clicked, setTestWord3Clicked] = useState(false);
   const [testWord4Clicked, setTestWord4Clicked] = useState(false);
 
+  // Generated rounds for testing
+  const [generatedRounds, setGeneratedRounds] = useState<StroopRound[]>([]);
+  const [roundsStats, setRoundsStats] = useState<any>(null);
+
   // Start the game when startGame prop changes to true
   useEffect(() => {
     if (startGame && gameState === 'waiting') {
       setGameState('playing');
     }
   }, [startGame, gameState]);
+
+  // Function to test round generation
+  const testRoundGeneration = () => {
+    const rounds = generateStroopRounds(totalRounds, wordCount, 40); 
+    setGeneratedRounds(rounds);
+    setRoundsStats(getStroopRoundsStats(rounds));
+    console.log('Generated rounds:', rounds);
+    console.log('Rounds stats:', getStroopRoundsStats(rounds));
+  };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
@@ -93,9 +107,9 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
       </div>
 
       <div style={{ marginBottom: '20px', border: '1px solid #bbb', padding: '15px', borderRadius: '5px' }}>
-        <h3>Test StroopTestWord Components:</h3>
+        <h3>Test StroopWord Components:</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
-          <StroopTestWord
+          <StroopWord
             value="RED"
             color="red"
             clicked={testWord1Clicked}
@@ -104,7 +118,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
               console.log('RED word clicked, new state:', !testWord1Clicked);
             }}
           />
-          <StroopTestWord
+          <StroopWord
             value="BLUE"
             color="blue"
             clicked={testWord2Clicked}
@@ -113,7 +127,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
               console.log('BLUE word clicked, new state:', !testWord2Clicked);
             }}
           />
-          <StroopTestWord
+          <StroopWord
             value="GREEN"
             color="yellow"
             clicked={testWord3Clicked}
@@ -122,7 +136,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
               console.log('GREEN (in yellow) word clicked, new state:', !testWord3Clicked);
             }}
           />
-          <StroopTestWord
+          <StroopWord
             value="YELLOW"
             color="green"
             clicked={testWord4Clicked}
@@ -133,9 +147,68 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
         </div>
         <div style={{ marginTop: '10px', fontSize: '14px', color: 'black' }}>
-          Click the words above to test the StroopTestWord component functionality.
+          Click the words above to test the StroopWord component functionality.
           Check browser console for click events.
         </div>
+      </div>
+
+      <div style={{ marginBottom: '20px', border: '1px solid #999', padding: '15px', borderRadius: '5px' }}>
+        <h3>Test Round Generation:</h3>
+        <button 
+          onClick={testRoundGeneration}
+          style={{ padding: '8px 16px', fontSize: '14px', marginBottom: '15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          Generate Test Rounds ({totalRounds} rounds, {wordCount} words each, 33% probability)
+        </button>
+        
+        {roundsStats && (
+          <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
+            <h4>Generation Statistics:</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '14px' }}>
+              <div><strong>Total Rounds:</strong> {roundsStats.totalRounds}</div>
+              <div><strong>Total Words:</strong> {roundsStats.totalWords}</div>
+              <div><strong>Congruent Words:</strong> {roundsStats.congruentWords}</div>
+              <div><strong>Incongruent Words:</strong> {roundsStats.incongruentWords}</div>
+              <div><strong>Actual Match %:</strong> {roundsStats.actualMatchPercentage}%</div>
+              <div><strong>Unique Combinations:</strong> {roundsStats.uniqueCombinations}</div>
+              <div><strong>Max Possible:</strong> {roundsStats.maxPossibleCombinations}</div>
+              <div><strong>Duplicates in Rounds:</strong> {roundsStats.duplicatesWithinRounds}</div>
+            </div>
+          </div>
+        )}
+
+        {generatedRounds.length > 0 && (
+          <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px', borderRadius: '4px' }}>
+            <h4>Generated Rounds (First 3 shown):</h4>
+            {generatedRounds.slice(0, 3).map((round, roundIndex) => (
+              <div key={roundIndex} style={{ marginBottom: '15px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                <strong>Round {roundIndex + 1}:</strong>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '5px' }}>
+                  {round.words.map((word, wordIndex) => (
+                    <span 
+                      key={wordIndex} 
+                      style={{ 
+                        color: word.color, 
+                        fontWeight: 'bold', 
+                        padding: '4px 8px', 
+                        backgroundColor: 'white', 
+                        borderRadius: '3px',
+                        fontSize: '12px'
+                      }}
+                    >
+                      {word.text}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {generatedRounds.length > 3 && (
+              <div style={{ fontSize: '12px', color: '#666' }}>
+                ... and {generatedRounds.length - 3} more rounds
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <button 

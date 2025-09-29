@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AttentionPage.css';
 import '../../styles/common.css';
-import StroopTest from './strooptest/StroopTest';
+import Stroop from './strooptest/Stroop';
 
 interface GameStats {
   totalPoints: number;
@@ -133,8 +133,8 @@ const AttentionPage: React.FC = () => {
     );
   }
 
-  // Render the appropriate game component based on color-blind mode
-  return <StroopTest onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} />;
+  // Render the main Stroop game component
+  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} />;
 };
 
 export default AttentionPage;
