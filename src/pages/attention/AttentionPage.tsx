@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AttentionPage.css';
 import '../../styles/common.css';
-import StroopTest from './StroopTest';
+import StroopTest from './strooptest/StroopTest';
 
 interface GameStats {
   totalPoints: number;
