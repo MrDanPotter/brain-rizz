@@ -30,6 +30,19 @@ const AttentionPage: React.FC = () => {
     }
   };
 
+  const getRoundTime = (difficulty: 'easy' | 'medium' | 'hard'): number => {
+    switch (difficulty) {
+      case 'easy':
+        return 2;
+      case 'medium':
+        return 3;
+      case 'hard':
+        return 4;
+      default:
+        return 2;
+    }
+  };
+
   const startGame = () => {
     setGameState('playing');
     setShouldStartGame(true);
@@ -64,7 +77,7 @@ const AttentionPage: React.FC = () => {
               <li>You'll see color words (RED, BLUE, GREEN, YELLOW)</li>
               <li>Click the word only when the word matches its ink color</li>
               <li>Do nothing when the word and color don't match</li>
-              <li>Each round lasts 2-4 seconds</li>
+              <li>Easy: 2s per round, Medium: 3s per round, Hard: 4s per round</li>
               <li>Total rounds: 12</li>
               <li>3 Difficulty levels (1, 3, and 6 words)</li>
             </ul>
@@ -134,7 +147,7 @@ const AttentionPage: React.FC = () => {
   }
 
   // Render the main Stroop game component
-  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} />;
+  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} roundTime={getRoundTime(difficulty)} />;
 };
 
 export default AttentionPage;
