@@ -37,13 +37,13 @@ export function generateStroopRounds(
 
   for (let roundIndex = 0; roundIndex < numRounds; roundIndex++) {
     const words: StroopWord[] = [];
-    const usedCombinations = new Set<string>(); // Track used text-color combinations
+    const usedCombinations = new Set<string>(); // Track used text-color combinations in this round
     
     // Generate each word individually using probability
     for (let wordIndex = 0; wordIndex < wordsPerRound; wordIndex++) {
       let newWord: StroopWord;
       let attempts = 0;
-      const maxAttempts = 50; // Prevent infinite loops
+      const maxAttempts = 100; // Increased to allow more attempts for consecutive round avoidance
       
       do {
         const randomValue = Math.random() * 100; // 0-100
@@ -77,6 +77,7 @@ export function generateStroopRounds(
         
         attempts++;
       } while (
+        // Check if this combination was used in this round
         usedCombinations.has(`${newWord.text}-${newWord.color}`) && 
         attempts < maxAttempts
       );
@@ -90,6 +91,27 @@ export function generateStroopRounds(
 
     // Shuffle the words in this round to randomize order
     shuffleArray(words);
+
+    // Now check for consecutive round conflicts and regenerate if necessary
+    if (roundIndex > 0) {
+      const previousRoundWords = rounds[roundIndex - 1].words;
+      let hasConflict = false;
+      
+      // Check if any word at the same index matches the previous round
+      for (let i = 0; i < Math.min(words.length, previousRoundWords.length); i++) {
+        if (words[i].text === previousRoundWords[i].text && 
+            words[i].color === previousRoundWords[i].color) {
+          hasConflict = true;
+          break;
+        }
+      }
+      
+      // If there's a conflict, regenerate this round
+      if (hasConflict) {
+        roundIndex--; // Decrement to regenerate this round
+        continue;
+      }
+    }
 
     rounds.push({
       words: words

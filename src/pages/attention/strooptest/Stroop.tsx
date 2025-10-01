@@ -4,10 +4,7 @@ import { generateStroopRounds, StroopRound, StroopWord as StroopWordType, isCong
 
 interface GameStats {
   totalPoints: number;
-  correctGo: number;
-  falseAlarms: number;
-  omissions: number;
-  reactionTimes: number[];
+  totalPossible: number;
 }
 
 interface StroopProps {
@@ -15,32 +12,32 @@ interface StroopProps {
   startGame: boolean;
   wordCount: number;
   roundTime: number; // Time in seconds for each round
+  numRounds: number; // Number of rounds in the game
 }
 
-const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundTime }) => {
+const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundTime, numRounds }) => {
   const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
   const [currentRound, setCurrentRound] = useState(0);
   const [rounds, setRounds] = useState<StroopRound[]>([]);
   const [score, setScore] = useState(0);
-  const [correctResponses, setCorrectResponses] = useState(0);
-  const [falseAlarms, setFalseAlarms] = useState(0);
-  const [omissions, setOmissions] = useState(0);
-  const [reactionTimes, setReactionTimes] = useState<number[]>([]);
   const [clickedWords, setClickedWords] = useState<Set<number>>(new Set()); // Track clicked word indices
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isBreather, setIsBreather] = useState(false);
+  const [totalPossibleScore, setTotalPossibleScore] = useState(0);
 
   // Generate rounds when game starts
   useEffect(() => {
     if (startGame && gameState === 'waiting') {
-      const generatedRounds = generateStroopRounds(12, wordCount, 40); // 12 rounds, 40% probability
+      const generatedRounds = generateStroopRounds(numRounds, wordCount, 40); // Use numRounds prop, 40% probability
       setRounds(generatedRounds);
       setGameState('playing');
       setCurrentRound(0);
       setTimeRemaining(roundTime);
       setClickedWords(new Set());
+      // Calculate total possible score (each word can potentially give 1 point)
+      setTotalPossibleScore(numRounds * wordCount);
     }
-  }, [startGame, gameState, wordCount, roundTime]);
+  }, [startGame, gameState, wordCount, roundTime, numRounds]);
 
   // Timer logic for rounds
   useEffect(() => {
@@ -109,14 +106,30 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
     setScore(prev => prev + roundScore);
   };
 
-  // Placeholder function to end game
+  // Function to end game
   const endGame = () => {
+    // Calculate the final score including the current round (since setState is async)
+    const currentRoundData = rounds[currentRound];
+    let finalScore = score;
+    
+    if (currentRoundData) {
+      // Add the current round's score
+      currentRoundData.words.forEach((word, index) => {
+        const isClicked = clickedWords.has(index);
+        const isWordCongruent = isCongruent(word);
+        
+        // +1 point for correct state:
+        // - Congruent word is clicked
+        // - Incongruent word is not clicked
+        if ((isWordCongruent && isClicked) || (!isWordCongruent && !isClicked)) {
+          finalScore += 1;
+        }
+      });
+    }
+    
     const finalStats: GameStats = {
-      totalPoints: score,
-      correctGo: correctResponses,
-      falseAlarms: falseAlarms,
-      omissions: omissions,
-      reactionTimes: reactionTimes
+      totalPoints: finalScore,
+      totalPossible: totalPossibleScore
     };
     onGameEnd(finalStats);
   };
@@ -146,7 +159,7 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
         fontSize: '18px',
         color: 'white'
       }}>
-        Game completed! Final Score: {score}
+        Game completed!
       </div>
     );
   }
@@ -162,25 +175,25 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
         <div style={{ fontSize: '16px', color: 'white', marginBottom: '10px' }}>
           Round {currentRound + 1} of {rounds.length}
         </div>
-        <div style={{ fontSize: '14px', color: 'white' }}>
-          Score: {score}
-        </div>
       </div>
 
       {currentRoundData && (
         <div style={{ 
-          display: 'flex', 
+          display: 'grid',
+          gridTemplateColumns: wordCount === 6 ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(120px, 1fr))',
           justifyContent: 'center', 
           alignItems: 'center',
-          flexWrap: 'wrap',
           gap: '20px',
-          minHeight: '200px'
+          minHeight: '200px',
+          maxWidth: wordCount === 6 ? '400px' : 'auto',
+          margin: '0 auto'
         }}>
           {currentRoundData.words.map((word, index) => (
             <div key={index} style={{
               width: '120px',
               height: '60px',
-              margin: '8px'
+              margin: '8px',
+              justifySelf: 'center'
             }}>
               {!isBreather && (
                 <StroopWord
@@ -195,22 +208,6 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
         </div>
       )}
 
-      <div style={{ marginTop: '30px' }}>
-        <button 
-          onClick={endGame}
-          style={{ 
-            padding: '10px 20px', 
-            fontSize: '16px', 
-            backgroundColor: '#dc3545', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          End Game Early
-        </button>
-      </div>
 
       <div style={{ marginTop: '20px', fontSize: '14px', color: 'white' }}>
         <p><strong>Instructions:</strong> Click on words when the text matches the color!</p>
