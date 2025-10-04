@@ -1,9 +1,9 @@
 import { 
   generateStroopRounds, 
   getStroopRoundsStats, 
-  isCongruent, 
-  getMaxUniqueCombinations 
+  isCongruent
 } from '../StroopUtils';
+import { COLOR_WORDS, COLORS, COLOR_MAP } from '../StroopColors';
 
 describe('StroopUtils', () => {
   describe('generateStroopRounds', () => {
@@ -112,26 +112,20 @@ describe('StroopUtils', () => {
 
   describe('isCongruent', () => {
     it('should correctly identify congruent words', () => {
-      expect(isCongruent({ text: 'RED', color: 'red' })).toBe(true);
-      expect(isCongruent({ text: 'BLUE', color: 'blue' })).toBe(true);
-      expect(isCongruent({ text: 'GREEN', color: 'green' })).toBe(true);
-      expect(isCongruent({ text: 'YELLOW', color: '#B8860B' })).toBe(true);
+      expect(isCongruent({ text: 'RED', color: COLOR_MAP.RED })).toBe(true);
+      expect(isCongruent({ text: 'BLUE', color: COLOR_MAP.BLUE })).toBe(true);
+      expect(isCongruent({ text: 'GREEN', color: COLOR_MAP.GREEN })).toBe(true);
+      expect(isCongruent({ text: 'YELLOW', color: COLOR_MAP.YELLOW })).toBe(true);
     });
 
     it('should correctly identify incongruent words', () => {
-      expect(isCongruent({ text: 'RED', color: 'blue' })).toBe(false);
-      expect(isCongruent({ text: 'BLUE', color: 'red' })).toBe(false);
-      expect(isCongruent({ text: 'GREEN', color: '#B8860B' })).toBe(false);
-      expect(isCongruent({ text: 'YELLOW', color: 'green' })).toBe(false);
+      expect(isCongruent({ text: 'RED', color: COLOR_MAP.BLUE })).toBe(false);
+      expect(isCongruent({ text: 'BLUE', color: COLOR_MAP.RED })).toBe(false);
+      expect(isCongruent({ text: 'GREEN', color: COLOR_MAP.YELLOW })).toBe(false);
+      expect(isCongruent({ text: 'YELLOW', color: COLOR_MAP.GREEN })).toBe(false);
     });
   });
 
-  describe('getMaxUniqueCombinations', () => {
-    it('should return the correct number of unique combinations', () => {
-      // 4 congruent combinations + 4 * 3 incongruent combinations = 4 + 12 = 16
-      expect(getMaxUniqueCombinations()).toBe(16);
-    });
-  });
 
   describe('getStroopRoundsStats', () => {
     it('should calculate correct statistics', () => {
@@ -140,7 +134,6 @@ describe('StroopUtils', () => {
       
       expect(stats.totalRounds).toBe(3);
       expect(stats.totalWords).toBe(6); // 3 rounds * 2 words
-      expect(stats.maxPossibleCombinations).toBe(16);
       expect(stats.actualMatchPercentage).toBeGreaterThanOrEqual(0);
       expect(stats.actualMatchPercentage).toBeLessThanOrEqual(100);
       expect(stats.duplicatesWithinRounds).toBe(0); // Should be 0 due to our generation logic

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StroopWord from './StroopWord';
 import { generateStroopRounds, getStroopRoundsStats, StroopRound, StroopWord as StroopWordType } from './StroopUtils';
+import { COLOR_WORDS, COLORS, COLOR_MAP } from './StroopColors';
 
 interface StroopStimulus {
   word: string;
@@ -111,7 +112,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
           <StroopWord
             value="RED"
-            color="red"
+            color={COLOR_MAP.RED}
             clicked={testWord1Clicked}
             onClick={() => {
               setTestWord1Clicked(!testWord1Clicked);
@@ -120,7 +121,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
           <StroopWord
             value="BLUE"
-            color="blue"
+            color={COLOR_MAP.BLUE}
             clicked={testWord2Clicked}
             onClick={() => {
               setTestWord2Clicked(!testWord2Clicked);
@@ -129,7 +130,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
           <StroopWord
             value="GREEN"
-            color="yellow"
+            color={COLOR_MAP.YELLOW}
             clicked={testWord3Clicked}
             onClick={() => {
               setTestWord3Clicked(!testWord3Clicked);
@@ -138,7 +139,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
           <StroopWord
             value="YELLOW"
-            color="green"
+            color={COLOR_MAP.GREEN}
             clicked={testWord4Clicked}
             onClick={() => {
               setTestWord4Clicked(!testWord4Clicked);

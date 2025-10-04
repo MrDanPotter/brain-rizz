@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getAccessibleColor } from './StroopColors';
 
 interface StroopTestWordProps {
   value: string;          // The text value to display
@@ -17,13 +18,6 @@ const StroopTestWord: React.FC<StroopTestWordProps> = ({
     onClick();
   };
 
-  // Make yellow more accessible by using a darker shade
-  const getAccessibleColor = (color: string): string => {
-    if (color.toLowerCase() === 'yellow') {
-      return '#B8860B'; // Dark goldenrod - much more readable on white background
-    }
-    return color;
-  };
 
   const containerStyle: React.CSSProperties = {
     display: 'inline-block',

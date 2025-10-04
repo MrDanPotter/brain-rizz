@@ -1,3 +1,5 @@
+import { COLOR_WORDS, COLORS, COLOR_MAP } from './StroopColors';
+
 export interface StroopWord {
   text: string;
   color: string;
@@ -6,12 +8,6 @@ export interface StroopWord {
 export interface StroopRound {
   words: StroopWord[];
 }
-
-// Available color words for the Stroop test
-const COLOR_WORDS = ['RED', 'BLUE', 'GREEN', 'YELLOW'];
-
-// Available colors (using accessible yellow)
-const COLORS = ['red', 'blue', 'green', '#B8860B']; // Using dark goldenrod for yellow
 
 /**
  * Generates all rounds for a Stroop test with specified parameters
@@ -132,19 +128,6 @@ function shuffleArray<T>(array: T[]): void {
   }
 }
 
-/**
- * Calculate the maximum number of unique word-color combinations possible
- * @returns The total number of unique combinations available
- */
-export function getMaxUniqueCombinations(): number {
-  // 4 congruent combinations (RED-red, BLUE-blue, GREEN-green, YELLOW-darkgoldenrod)
-  const congruentCombinations = COLOR_WORDS.length;
-  
-  // For incongruent: each word can be paired with 3 other colors (not its matching color)
-  const incongruentCombinations = COLOR_WORDS.length * (COLORS.length - 1);
-  
-  return congruentCombinations + incongruentCombinations;
-}
 
 /**
  * Helper function to check if a StroopWord is congruent (text matches color)
@@ -152,14 +135,7 @@ export function getMaxUniqueCombinations(): number {
  * @returns true if the word is congruent
  */
 export function isCongruent(word: StroopWord): boolean {
-  const colorMap: { [key: string]: string } = {
-    'RED': 'red',
-    'BLUE': 'blue',
-    'GREEN': 'green',
-    'YELLOW': '#B8860B'
-  };
-  
-  return colorMap[word.text] === word.color;
+  return COLOR_MAP[word.text as keyof typeof COLOR_MAP] === word.color;
 }
 
 /**
@@ -174,7 +150,6 @@ export function getStroopRoundsStats(rounds: StroopRound[]): {
   incongruentWords: number;
   actualMatchPercentage: number;
   uniqueCombinations: number;
-  maxPossibleCombinations: number;
   duplicatesWithinRounds: number;
 } {
   const totalRounds = rounds.length;
@@ -214,7 +189,6 @@ export function getStroopRoundsStats(rounds: StroopRound[]): {
     incongruentWords,
     actualMatchPercentage: Math.round(actualMatchPercentage * 100) / 100, // Round to 2 decimal places
     uniqueCombinations: allCombinations.size,
-    maxPossibleCombinations: getMaxUniqueCombinations(),
     duplicatesWithinRounds
   };
 }
