@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StroopWord from './StroopWord';
 import { generateStroopRounds, getStroopRoundsStats, StroopRound, StroopWord as StroopWordType } from './StroopUtils';
-import { COLOR_WORDS, COLORS, COLOR_MAP } from './StroopColors';
+import { useCurrentPalette } from './colors';
 
 interface StroopStimulus {
   word: string;
@@ -24,6 +24,8 @@ interface StroopTestProps {
 }
 
 const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount }) => {
+  const currentPalette = useCurrentPalette();
+  
   // Game state variables
   const [currentRound, setCurrentRound] = useState(1);
   const [totalRounds] = useState(12);
@@ -112,7 +114,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
           <StroopWord
             value="RED"
-            color={COLOR_MAP.RED}
+            color={currentPalette.colorMap.RED}
             clicked={testWord1Clicked}
             onClick={() => {
               setTestWord1Clicked(!testWord1Clicked);
@@ -121,7 +123,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
           <StroopWord
             value="BLUE"
-            color={COLOR_MAP.BLUE}
+            color={currentPalette.colorMap.BLUE}
             clicked={testWord2Clicked}
             onClick={() => {
               setTestWord2Clicked(!testWord2Clicked);
@@ -130,7 +132,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
           <StroopWord
             value="GREEN"
-            color={COLOR_MAP.YELLOW}
+            color={currentPalette.colorMap.YELLOW}
             clicked={testWord3Clicked}
             onClick={() => {
               setTestWord3Clicked(!testWord3Clicked);
@@ -139,7 +141,7 @@ const StroopTest: React.FC<StroopTestProps> = ({ onGameEnd, startGame, wordCount
           />
           <StroopWord
             value="YELLOW"
-            color={COLOR_MAP.GREEN}
+            color={currentPalette.colorMap.GREEN}
             clicked={testWord4Clicked}
             onClick={() => {
               setTestWord4Clicked(!testWord4Clicked);

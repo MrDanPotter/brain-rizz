@@ -3,7 +3,7 @@ import {
   getStroopRoundsStats, 
   isCongruent
 } from '../StroopUtils';
-import { COLOR_WORDS, COLORS, COLOR_MAP } from '../StroopColors';
+import { DEFAULT_PALETTE } from '../colors/ColorPalettes';
 
 describe('StroopUtils', () => {
   describe('generateStroopRounds', () => {
@@ -112,17 +112,17 @@ describe('StroopUtils', () => {
 
   describe('isCongruent', () => {
     it('should correctly identify congruent words', () => {
-      expect(isCongruent({ text: 'RED', color: COLOR_MAP.RED })).toBe(true);
-      expect(isCongruent({ text: 'BLUE', color: COLOR_MAP.BLUE })).toBe(true);
-      expect(isCongruent({ text: 'GREEN', color: COLOR_MAP.GREEN })).toBe(true);
-      expect(isCongruent({ text: 'YELLOW', color: COLOR_MAP.YELLOW })).toBe(true);
+      expect(isCongruent({ text: 'RED', color: DEFAULT_PALETTE.colorMap.RED })).toBe(true);
+      expect(isCongruent({ text: 'BLUE', color: DEFAULT_PALETTE.colorMap.BLUE })).toBe(true);
+      expect(isCongruent({ text: 'GREEN', color: DEFAULT_PALETTE.colorMap.GREEN })).toBe(true);
+      expect(isCongruent({ text: 'YELLOW', color: DEFAULT_PALETTE.colorMap.YELLOW })).toBe(true);
     });
 
     it('should correctly identify incongruent words', () => {
-      expect(isCongruent({ text: 'RED', color: COLOR_MAP.BLUE })).toBe(false);
-      expect(isCongruent({ text: 'BLUE', color: COLOR_MAP.RED })).toBe(false);
-      expect(isCongruent({ text: 'GREEN', color: COLOR_MAP.YELLOW })).toBe(false);
-      expect(isCongruent({ text: 'YELLOW', color: COLOR_MAP.GREEN })).toBe(false);
+      expect(isCongruent({ text: 'RED', color: DEFAULT_PALETTE.colorMap.BLUE })).toBe(false);
+      expect(isCongruent({ text: 'BLUE', color: DEFAULT_PALETTE.colorMap.RED })).toBe(false);
+      expect(isCongruent({ text: 'GREEN', color: DEFAULT_PALETTE.colorMap.YELLOW })).toBe(false);
+      expect(isCongruent({ text: 'YELLOW', color: DEFAULT_PALETTE.colorMap.GREEN })).toBe(false);
     });
   });
 

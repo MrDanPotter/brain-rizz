@@ -4,13 +4,14 @@ import '../../styles/common.css';
 import Stroop from './strooptest/Stroop';
 import StroopStartPage from './strooptest/StroopStartPage';
 import StroopConclusion from './strooptest/StroopConclusion';
+import { ColorPaletteProvider } from './strooptest/colors';
 
 interface GameStats {
   totalPoints: number;
   totalPossible: number;
 }
 
-const AttentionPage: React.FC = () => {
+const AttentionPageContent: React.FC = () => {
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'summary'>('menu');
   const [finalStats, setFinalStats] = useState<GameStats | null>(null);
   const [shouldStartGame, setShouldStartGame] = useState(false);
@@ -80,7 +81,15 @@ const AttentionPage: React.FC = () => {
   }
 
   // Render the main Stroop game component
-  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} roundTime={getRoundTime(difficulty)} numRounds={12} />;
+  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} roundTime={getRoundTime(difficulty)} numRounds={1} />;
+};
+
+const AttentionPage: React.FC = () => {
+  return (
+    <ColorPaletteProvider>
+      <AttentionPageContent />
+    </ColorPaletteProvider>
+  );
 };
 
 export default AttentionPage;

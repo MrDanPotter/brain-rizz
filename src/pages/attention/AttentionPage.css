@@ -271,14 +271,48 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Stroop Test Grid Layout */
+.stroop-word-grid {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  min-height: 200px;
+  margin: 0 auto;
+}
+
+.stroop-word-grid.six-words {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 300px;
+}
+
+.stroop-word-grid.few-words {
+  grid-template-columns: 1fr;
+  max-width: 150px;
+}
+
+.stroop-word-grid.other-words {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  max-width: auto;
+}
+
 /* Responsive Design */
+@media (min-width: 769px) {
+  .stroop-word-grid.six-words {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 400px;
+  }
+}
+
 @media (max-width: 768px) {
   .stroop-page {
     padding: 0.5rem;
+    min-height: calc(100vh - 100px);
   }
   
   .stroop-header h2 {
     font-size: 2rem;
+    margin-bottom: 0.5rem;
   }
   
   .stroop-header p {
@@ -399,6 +433,33 @@
   }
   
   .menu-card p {
+    font-size: 1rem;
+  }
+  
+  .stroop-page {
+    padding: 0.25rem;
+    min-height: calc(100vh - 80px);
+  }
+  
+  .stroop-header h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .stroop-header p {
+    font-size: 1rem;
+  }
+  
+  .summary-card {
+    padding: 1.5rem;
+  }
+  
+  .summary-card h3 {
+    font-size: 1.3rem;
+  }
+  
+  .play-again-btn {
+    padding: 0.75rem 2rem;
     font-size: 1rem;
   }
 }

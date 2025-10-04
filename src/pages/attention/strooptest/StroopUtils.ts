@@ -1,4 +1,5 @@
-import { COLOR_WORDS, COLORS, COLOR_MAP } from './StroopColors';
+import { getColorsFromPalette } from './StroopColors';
+import { ColorPalette, DEFAULT_PALETTE } from './colors/ColorPalettes';
 
 export interface StroopWord {
   text: string;
@@ -14,12 +15,14 @@ export interface StroopRound {
  * @param numRounds - Total number of rounds to generate
  * @param wordsPerRound - Number of words in each round
  * @param probabilityMatch - Probability (0-100) that each individual word will be congruent (word matches color)
+ * @param palette - Color palette to use for the game
  * @returns Array of StroopRound objects containing all the test data
  */
 export function generateStroopRounds(
   numRounds: number,
   wordsPerRound: number,
-  probabilityMatch: number
+  probabilityMatch: number,
+  palette: ColorPalette = DEFAULT_PALETTE
 ): StroopRound[] {
   // Validate inputs
   if (numRounds <= 0 || wordsPerRound <= 0) {
@@ -29,6 +32,7 @@ export function generateStroopRounds(
     throw new Error('probabilityMatch must be between 0 and 100');
   }
 
+  const { COLOR_WORDS, COLORS } = getColorsFromPalette(palette);
   const rounds: StroopRound[] = [];
 
   for (let roundIndex = 0; roundIndex < numRounds; roundIndex++) {
@@ -132,18 +136,20 @@ function shuffleArray<T>(array: T[]): void {
 /**
  * Helper function to check if a StroopWord is congruent (text matches color)
  * @param word - StroopWord to check
+ * @param palette - Color palette to use for comparison
  * @returns true if the word is congruent
  */
-export function isCongruent(word: StroopWord): boolean {
-  return COLOR_MAP[word.text as keyof typeof COLOR_MAP] === word.color;
+export function isCongruent(word: StroopWord, palette: ColorPalette = DEFAULT_PALETTE): boolean {
+  return palette.colorMap[word.text] === word.color;
 }
 
 /**
  * Helper function to get statistics about generated rounds
  * @param rounds - Array of StroopRound objects
+ * @param palette - Color palette used for the rounds
  * @returns Object with statistics about the rounds
  */
-export function getStroopRoundsStats(rounds: StroopRound[]): {
+export function getStroopRoundsStats(rounds: StroopRound[], palette: ColorPalette = DEFAULT_PALETTE): {
   totalRounds: number;
   totalWords: number;
   congruentWords: number;
@@ -163,7 +169,7 @@ export function getStroopRoundsStats(rounds: StroopRound[]): {
     
     round.words.forEach(word => {
       totalWords++;
-      if (isCongruent(word)) {
+      if (isCongruent(word, palette)) {
         congruentWords++;
       }
       

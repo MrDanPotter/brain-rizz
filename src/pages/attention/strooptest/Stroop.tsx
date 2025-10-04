@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import StroopWord from './StroopWord';
 import { generateStroopRounds, StroopRound, StroopWord as StroopWordType, isCongruent } from './StroopUtils';
+import { useCurrentPalette } from './colors';
+import '../AttentionPage.css';
 
 interface GameStats {
   totalPoints: number;
@@ -16,6 +18,7 @@ interface StroopProps {
 }
 
 const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundTime, numRounds }) => {
+  const currentPalette = useCurrentPalette();
   const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
   const [currentRound, setCurrentRound] = useState(0);
   const [rounds, setRounds] = useState<StroopRound[]>([]);
@@ -28,7 +31,7 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
   // Generate rounds when game starts
   useEffect(() => {
     if (startGame && gameState === 'waiting') {
-      const generatedRounds = generateStroopRounds(numRounds, wordCount, 40); // Use numRounds prop, 40% probability
+      const generatedRounds = generateStroopRounds(numRounds, wordCount, 40, currentPalette); // Use numRounds prop, 40% probability
       setRounds(generatedRounds);
       setGameState('playing');
       setCurrentRound(0);
@@ -93,7 +96,7 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
     
     currentRoundData.words.forEach((word, index) => {
       const isClicked = clickedWords.has(index);
-      const isWordCongruent = isCongruent(word);
+      const isWordCongruent = isCongruent(word, currentPalette);
       
       // +1 point for correct state:
       // - Congruent word is clicked
@@ -116,7 +119,7 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
       // Add the current round's score
       currentRoundData.words.forEach((word, index) => {
         const isClicked = clickedWords.has(index);
-        const isWordCongruent = isCongruent(word);
+        const isWordCongruent = isCongruent(word, currentPalette);
         
         // +1 point for correct state:
         // - Congruent word is clicked
@@ -178,16 +181,7 @@ const Stroop: React.FC<StroopProps> = ({ onGameEnd, startGame, wordCount, roundT
       </div>
 
       {currentRoundData && (
-        <div style={{ 
-          display: 'grid',
-          gridTemplateColumns: wordCount === 6 ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(120px, 1fr))',
-          justifyContent: 'center', 
-          alignItems: 'center',
-          gap: '20px',
-          minHeight: '200px',
-          maxWidth: wordCount === 6 ? '400px' : 'auto',
-          margin: '0 auto'
-        }}>
+        <div className={`stroop-word-grid ${wordCount === 6 ? 'six-words' : wordCount <= 3 ? 'few-words' : 'other-words'}`}>
           {currentRoundData.words.map((word, index) => (
             <div key={index} style={{
               width: '120px',

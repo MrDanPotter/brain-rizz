@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../../styles/common.css';
+import { useColorPalette } from './colors';
 
 interface StroopStartPageProps {
   difficulty: 'easy' | 'medium' | 'hard';
@@ -12,6 +13,8 @@ const StroopStartPage: React.FC<StroopStartPageProps> = ({
   onDifficultyChange,
   onStartGame
 }) => {
+  const { currentPalette, isColorBlindMode, setColorBlindMode } = useColorPalette();
+
   return (
     <div className="stroop-page">
       <div className="stroop-menu">
@@ -21,7 +24,7 @@ const StroopStartPage: React.FC<StroopStartPageProps> = ({
           
           <h3>Instructions</h3>
           <ul>
-            <li>You'll see color words (RED, BLUE, GREEN, YELLOW)</li>
+            <li>You'll see color words ({currentPalette.colorWords.join(', ')})</li>
             <li>Click the word only when the word matches its ink color</li>
             <li>Do nothing when the word and color don't match</li>
             <li>Total rounds: 12</li>
@@ -39,6 +42,18 @@ const StroopStartPage: React.FC<StroopStartPageProps> = ({
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
+            </div>
+            
+            <div className="config-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={isColorBlindMode}
+                  onChange={(e) => setColorBlindMode(e.target.checked)}
+                  style={{ margin: 0 }}
+                />
+                Enable color-blind mode
+              </label>
             </div>
           </div>
           
