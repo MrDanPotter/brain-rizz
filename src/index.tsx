@@ -17,23 +17,9 @@ root.render(
 // Learn more about service workers: https://cra.link/PWA
 serviceWorkerRegistration.register({
   onUpdate: (registration) => {
-    // Check if running locally
-    const isLocalhost = Boolean(
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '[::1]' ||
-      window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
-    );
-    
-    if (isLocalhost) {
-      // Auto-update for local development
-      console.log('New version available, auto-updating...');
-      window.location.reload();
-    } else {
-      // Show update notification for production
-      if (window.confirm('New version available! Reload to update?')) {
-        window.location.reload();
-      }
-    }
+    // Always reload to get the latest version
+    console.log('New version available, reloading...');
+    window.location.reload();
   },
   onSuccess: (registration) => {
     console.log('App is ready for offline use');
