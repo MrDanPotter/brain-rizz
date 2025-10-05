@@ -81,7 +81,7 @@ const AttentionPageContent: React.FC = () => {
   }
 
   // Render the main Stroop game component
-  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} roundTime={getRoundTime(difficulty)} numRounds={1} />;
+  return <Stroop onGameEnd={handleGameEnd} startGame={shouldStartGame} wordCount={getDifficultyWordCount(difficulty)} roundTime={getRoundTime(difficulty)} numRounds={12} />;
 };
 
 const AttentionPage: React.FC = () => {
